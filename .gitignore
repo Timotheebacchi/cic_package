@@ -1,0 +1,24 @@
+# Compilation
+*.o
+*.so
+*.rcpp_*.cpp
+RcppExports.*
+
+# R
+.Rhistory
+.Rproj.user/
+.Renviron
+.Rprofile
+
+# System
+.DS_Store
+Thumbs.db
+
+# Build
+src/*.o
+src/*.so
+src/Makevars.win
+src/config.h
+
+# Check
+*.tar.gz

@@ -1,8 +1,8 @@
 Package: cic
 Title: Changes-in-Changes Estimator with Asymptotic Confidence Intervals
 Version: 0.1.0
-Authors@R: 
-    person("Timothée", "Bacchi", email = "timothee.bacchi@etu.minesparis.psl.eu", role = c("aut", "cre"))
+Authors@R: person("Timothée", "Bacchi", email = "timothee.bacchi@etu.minesparis.psl.eu", role = c("aut", "cre"))
+Maintainer: Timothée Bacchi <timothee.bacchi@etu.minesparis.psl.eu>
 Description: Implements the Changes-in-Changes estimator (Athey & Imbens, 2006)
     defined as the average of the quantile-transformed ranks. Provides
     asymptotic confidence intervals via several variance estimators (split-sample,

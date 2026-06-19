@@ -31,7 +31,7 @@ print.cic <- function(x, digits = 4, ...) {
 
 #' @export
 summary.cic <- function(object, digits = 4, ...) {
-  cat("Changes-in-Changes — Summary\n")
+  cat("Changes-in-Changes - Summary\n")
   cat(rep("=", 44), "\n", sep = "")
   cat(sprintf("Point estimate : %.4f\n\n", object$theta_hat))
 

@@ -2,18 +2,18 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 boot_core <- function(Ys, Xs, Zs, B) {
-    .Call(`_cic_boot_core`, Ys, Xs, Zs, B)
+    .Call('_cic_boot_core', PACKAGE = 'cic', Ys, Xs, Zs, B)
 }
 
 f_y_hat_epanechnikov <- function(Y, y, h) {
-    .Call(`_cic_f_y_hat_epanechnikov`, Y, y, h)
+    .Call('_cic_f_y_hat_epanechnikov', PACKAGE = 'cic', Y, y, h)
 }
 
 rect_counts_rcpp <- function(X_sorted, x_eval, h_vals) {
-    .Call(`_cic_rect_counts_rcpp`, X_sorted, x_eval, h_vals)
+    .Call('_cic_rect_counts_rcpp', PACKAGE = 'cic', X_sorted, x_eval, h_vals)
 }
 
 counts_to_density <- function(counts, h_vals, n) {
-    .Call(`_cic_counts_to_density`, counts, h_vals, n)
+    .Call('_cic_counts_to_density', PACKAGE = 'cic', counts, h_vals, n)
 }
 

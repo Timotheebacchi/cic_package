@@ -1,3 +1,8 @@
+#' @useDynLib cic, .registration = TRUE
+#' @importFrom Rcpp evalCpp
+#' @import stats
+NULL
+
 #' Changes-in-Changes estimator
 #'
 #' Computes the Changes-in-Changes (CiC) estimator
