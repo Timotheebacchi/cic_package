@@ -5,8 +5,7 @@ Authors@R: person("Timothée", "Bacchi", email = "timothee.bacchi@etu.minesparis
 Maintainer: Timothée Bacchi <timothee.bacchi@etu.minesparis.psl.eu>
 Description: Implements the Changes-in-Changes estimator (Athey & Imbens, 2006)
     defined as the average of the quantile-transformed ranks. Provides
-    asymptotic confidence intervals via several variance estimators (split-sample,
-    uniform kernel, adaptive kernel) and bootstrap alternatives (percentile and
+    asymptotic confidence intervals via a full-sample (no-split) variance estimator and bootstrap alternatives (percentile and
     standard-error). The core computations are written in C++ via Rcpp for
     performance.
 License: MIT + file LICENSE

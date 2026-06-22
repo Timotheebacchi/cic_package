@@ -69,7 +69,7 @@ d <- sim_dgp(n = 500, seed = 123)
 theta_0 <- theta_true()
 
 # Estimate
-fit <- cic(d$Y, d$X, d$Z, method = "split", B = 200)
+fit <- cic(d$Y, d$X, d$Z, method = "no-split", B = 200)
 print(fit)
 @
 
@@ -79,7 +79,7 @@ Compare the three methods:
 
 <<>>=
 fit_all <- cic(d$Y, d$X, d$Z, 
-               method = c("split", "bse", "bpc"), 
+               method = c("no-split", "bse", "bpc"), 
                B = 200)
 fit_all$ci
 @
@@ -90,7 +90,7 @@ With a larger sample, the estimator converges to the true parameter:
 
 <<>>=
 d_large <- sim_dgp(n = 5000, seed = 456)
-fit_large <- cic(d_large$Y, d_large$X, d_large$Z, method = "split")
+fit_large <- cic(d_large$Y, d_large$X, d_large$Z, method = "no-split")
 
 cat("True theta_0 =", theta_0, "\n")
 cat("Estimated theta_hat (n=500) =", fit$theta_hat, "\n")

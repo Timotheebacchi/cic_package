@@ -17,22 +17,22 @@
 # depends on h_vals, so we cache (counts, h_vals) keyed by (eps, pointwise).
 #
 # Arguments:
-#   U_sorted    : sorted vector of estimated ranks (Uhat)
-#   FYhat_split : empirical CDF grid, typically (1:(n-1)) / n
+#   U_sorted : sorted vector of estimated ranks (Uhat)
+#   FYhat    : empirical CDF grid, typically (1:(n-1)) / n
 #
 # Returns a list with:
-#   $estimate(eps, pointwise) : evaluates the density at FYhat_split
+#   $estimate(eps, pointwise) : evaluates the density at FYhat
 #   $reset()                  : clears the cache
-.make_density_estimator <- function(U_sorted, FYhat_split) {
+.make_density_estimator <- function(U_sorted, FYhat) {
   cache <- list()
   n     <- length(U_sorted)
   list(
     estimate = function(eps, pointwise = 1) {
       key <- paste(eps, pointwise, sep = "_")
       if (is.null(cache[[key]])) {
-        h_vals <- eps * (FYhat_split * (1 - FYhat_split))^pointwise
+        h_vals <- eps * (FYhat * (1 - FYhat))^pointwise
         cache[[key]] <<- list(
-          counts = rect_counts_rcpp(U_sorted, FYhat_split, h_vals),
+          counts = rect_counts_rcpp(U_sorted, FYhat, h_vals),
           h_vals = h_vals
         )
       }

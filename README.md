@@ -6,7 +6,7 @@ An R package implementing the **Changes-in-Changes (CiC) estimator** from Athey 
 
 - **Core estimator**: Average of quantile-transformed ranks
 - **Confidence intervals via three methods**:
-  - Split-sample (nonparametric, fast)
+  - No-split / Full-sample (nonparametric, uses all data)
   - Bootstrap standard-error (bse)
   - Bootstrap percentile (bpc)
 - **Performance**: C++ backend via Rcpp
@@ -16,7 +16,7 @@ An R package implementing the **Changes-in-Changes (CiC) estimator** from Athey 
 
 ```r
 # Install from GitHub
-devtools::install_github("timbak/cic_package")
+devtools::install_github("Timotheebacchi/cic_package")
 ```
 
 ## Quick Start
@@ -32,8 +32,8 @@ Y <- -W^(-0.2) + (1-W)^(-0.05)  # Quantile function
 X <- qnorm(rbeta(n, 1, 1.05))   # Covariate
 Z <- rnorm(n)                     # Instrument
 
-# Estimate with split-sample CI
-fit <- cic(Y, X, Z, method = "split")
+# Estimate with no-split CI
+fit <- cic(Y, X, Z, method = "no-split")
 
 # View results
 print(fit)
@@ -48,7 +48,7 @@ The `cic()` function supports:
 
 | Method | Speed | Notes |
 |--------|-------|-------|
-| `"split"` | Fast | Nonparametric, requires even n |
+| `"no-split"` | Fast | Nonparametric, uses full sample |
 | `"bse"` | Medium | Bootstrap standard-error |
 | `"bpc"` | Medium | Bootstrap percentile |
 

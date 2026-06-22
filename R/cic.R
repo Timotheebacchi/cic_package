@@ -13,15 +13,15 @@ NULL
 #' @param Y Numeric vector. Outcome sample of length \eqn{n_1}.
 #' @param X Numeric vector. Covariate sample of length \eqn{n_2}.
 #' @param Z Numeric vector. Instrument sample of length \eqn{n_3}.
-#' @param method Character vector. One or more of `"split"`, `"bse"`, `"bpc"`.
+#' @param method Character vector. One or more of `"no-split"`, `"bse"`, `"bpc"`.
 #'   Defaults to all three.
-#'   * `"split"` : asymptotic CI using the split-sample variance estimator.
-#'   * `"bse"`   : bootstrap CI using the standard-error bootstrap.
-#'   * `"bpc"`   : bootstrap CI using the percentile bootstrap.
+#'   * `"no-split"` : asymptotic CI using the full-sample (no-split) variance estimator.
+#'   * `"bse"`      : bootstrap CI using the standard-error bootstrap.
+#'   * `"bpc"`      : bootstrap CI using the percentile bootstrap.
 #' @param B Integer. Number of bootstrap replications. Ignored if neither
 #'   `"bse"` nor `"bpc"` is in `method`. Must be >= 200. Default: 999.
 #' @param h Numeric or `NULL`. Bandwidth for the Epanechnikov KDE used in the
-#'   `"split"` variance estimator. If `NULL` (default), Silverman's
+#'   `"no-split"` (full-sample) variance estimator. If `NULL` (default), Silverman's
 #'   rule-of-thumb is applied automatically.
 #' @param level Numeric in (0, 1). Confidence level. Default: 0.95.
 #'
@@ -46,7 +46,7 @@ NULL
 #'
 #' @export
 cic <- function(Y, X, Z,
-                method = c("split", "bse", "bpc"),
+                method = c("no-split", "bse", "bpc"),
                 B      = 999L,
                 h      = NULL,
                 level  = 0.95) {
@@ -56,7 +56,7 @@ cic <- function(Y, X, Z,
   stopifnot(
     is.numeric(Y), is.numeric(X), is.numeric(Z),
     length(Y) >= 4, length(X) >= 4, length(Z) >= 4,
-    length(Y) %% 2 == 0, length(X) %% 2 == 0, length(Z) %% 2 == 0,
+    is.null(h) || (is.numeric(h) && length(h) == 1 && h > 0),
     is.numeric(level), level > 0, level < 1
   )
   if (any(c("bse", "bpc") %in% method)) {
@@ -88,35 +88,35 @@ cic <- function(Y, X, Z,
   lbda1_3  <- N * (n1 + n3) / (n1 * n3)
   lbda2    <- N / n2
 
-  if ("split" %in% method) {
+  if ("no-split" %in% method) {
     eps_bw <- 1 / log(n2)
 
-    # Split Z and X into two halves
-    FZ1   <- stats::ecdf(Z[1:(n3 / 2)])
-    FZ2   <- stats::ecdf(Z[(n3 / 2 + 1):n3])
-    Uhat1 <- FZ1(X[1:(n2 / 2)])
-    Uhat2 <- FZ2(X[(n2 / 2 + 1):n2])
+    # No-split: use full samples, not divided into halves
+    Ysortdiff <- diff(sort(Y))
+    FYhat     <- seq_len(n1 - 1) / n1
+    
+    est_full   <- .make_density_estimator(sort(Uhat), FYhat)
+    fUhat      <- est_full$estimate(eps_bw, pointwise = 1)
+    fUhat_unif <- est_full$estimate(eps_bw, pointwise = 0)
+    fUhat_t2   <- est_full$estimate(2 * eps_bw, pointwise = 1)
+    fUhat_d2   <- est_full$estimate(eps_bw / 2, pointwise = 1)
 
-    Ysort1diff  <- diff(sort(Y[1:(n1 / 2)]))
-    Ysort2diff  <- diff(sort(Y[(n1 / 2 + 1):n1]))
-    FYhat_split <- seq_len(n1 / 2 - 1) / (n1 / 2)
+    eta_hat    <- .fast_eta(Ysortdiff, fUhat,      Ysortdiff, fUhat,      FYhat)
+    eta_unif   <- .fast_eta(Ysortdiff, fUhat_unif, Ysortdiff, fUhat_unif, FYhat)
+    eta_t2     <- .fast_eta(Ysortdiff, fUhat_t2,   Ysortdiff, fUhat_t2,   FYhat)
+    eta_d2     <- .fast_eta(Ysortdiff, fUhat_d2,   Ysortdiff, fUhat_d2,   FYhat)
 
-    est1   <- .make_density_estimator(sort(Uhat1), FYhat_split)
-    est2   <- .make_density_estimator(sort(Uhat2), FYhat_split)
-    fUhat1 <- est1$estimate(eps_bw, pointwise = 1)
-    fUhat2 <- est2$estimate(eps_bw, pointwise = 1)
+    eta_nosplit <- (eta_hat + eta_unif + eta_t2 + eta_d2) / 4
+    sigma_sq    <- lbda1_3 * eta_nosplit + lbda2 * eps_hat
+    se          <- sqrt(sigma_sq / N)
 
-    eta_split <- .fast_eta(Ysort1diff, fUhat1, Ysort2diff, fUhat2, FYhat_split)
-    sigma_sq  <- lbda1_3 * eta_split + lbda2 * eps_hat
-    se        <- sqrt(sigma_sq / N)
-
-    ci_rows[["split"]] <- data.frame(
-      method = "split",
+    ci_rows[["no-split"]] <- data.frame(
+      method = "no-split",
       lower  = theta_hat - z_a * se,
       upper  = theta_hat + z_a * se,
       length = 2 * z_a * se
     )
-    rm(Ysort1diff, Ysort2diff, FYhat_split, fUhat1, fUhat2, est1, est2)
+    rm(Ysortdiff, FYhat, fUhat, fUhat_unif, fUhat_t2, fUhat_d2, est_full)
   }
 
   if (any(c("bse", "bpc") %in% method)) {
@@ -154,8 +154,8 @@ cic <- function(Y, X, Z,
       ci        = ci,
       level     = level,
       n         = c(n1 = n1, n2 = n2, n3 = n3),
-      method    = method,
-      h         = if ("split" %in% method) h else NA_real_
+        method    = method,
+      h         = if ("no-split" %in% method) h else NA_real_
     ),
     class = "cic"
   )

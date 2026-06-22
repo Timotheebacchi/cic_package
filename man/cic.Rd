@@ -8,7 +8,7 @@ cic(
   Y,
   X,
   Z,
-  method = c("split", "bse", "bpc"),
+  method = c("no-split", "bse", "bpc"),
   B = 999L,
   h = NULL,
   level = 0.95
@@ -21,19 +21,19 @@ cic(
 
 \item{Z}{Numeric vector. Instrument sample of length \eqn{n_3}.}
 
-\item{method}{Character vector. One or more of \code{"split"}, \code{"bse"}, \code{"bpc"}.
+\item{method}{Character vector. One or more of \code{"no-split"}, \code{"bse"}, \code{"bpc"}.
 Defaults to all three.
 \itemize{
-\item \code{"split"} : asymptotic CI using the split-sample variance estimator.
-\item \code{"bse"}   : bootstrap CI using the standard-error bootstrap.
-\item \code{"bpc"}   : bootstrap CI using the percentile bootstrap.
+\item \code{"no-split"} : asymptotic CI using the full-sample (no-split) variance estimator.
+\item \code{"bse"}      : bootstrap CI using the standard-error bootstrap.
+\item \code{"bpc"}      : bootstrap CI using the percentile bootstrap.
 }}
 
 \item{B}{Integer. Number of bootstrap replications. Ignored if neither
 \code{"bse"} nor \code{"bpc"} is in \code{method}. Must be >= 200. Default: 999.}
 
 \item{h}{Numeric or \code{NULL}. Bandwidth for the Epanechnikov KDE used in the
-\code{"split"} variance estimator. If \code{NULL} (default), Silverman's
+\code{"no-split"} (full-sample) variance estimator. If \code{NULL} (default), Silverman's
 rule-of-thumb is applied automatically.}
 
 \item{level}{Numeric in (0, 1). Confidence level. Default: 0.95.}
