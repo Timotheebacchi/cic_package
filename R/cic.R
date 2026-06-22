@@ -60,6 +60,10 @@ cic <- function(Y, X, Z,
     is.numeric(level), level > 0, level < 1
   )
   if (any(c("bse", "bpc") %in% method)) {
+    # Sanitize B: check for NA and NULL before conversion
+    if (is.null(B) || (is.na(B))) {
+      stop("B must not be NULL or NA.")
+    }
     B <- as.integer(B)
     if (B < 200L) {
       warning("B < 200: the bootstrap standard error may be unstable. ",
@@ -123,7 +127,18 @@ cic <- function(Y, X, Z,
   }
 
   if (any(c("bse", "bpc") %in% method)) {
-    boot_vals <- boot_core(sort(Y), X, sort(Z), B = B)
+    # Use internal R implementation of bootstrap core
+    # (fallback to pure R if Rcpp version unavailable)
+    tryCatch({
+      boot_vals <- .boot_core(sort(Y), X, sort(Z), B = B)
+    }, error = function(e) {
+      stop(
+        "Bootstrap computation failed. This may occur if the compiled C++ code ",
+        "is unavailable or corrupted. Please ensure the package is properly ",
+        "installed and compiled: install.packages('cic', type='source'). ",
+        "Original error: ", conditionMessage(e)
+      )
+    })
 
     if ("bpc" %in% method) {
       q_lo <- stats::quantile(boot_vals, probs = alpha,     names = FALSE)
