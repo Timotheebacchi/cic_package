@@ -89,7 +89,10 @@ cic <- function(Y, X, Z,
   lbda2    <- N / n2
 
   if ("no-split" %in% method) {
-    eps_bw <- 1 / log(n2)
+    # Use the user-provided or default Silverman bandwidth in the no-split
+    # adaptive density estimator. This makes fit$h the actual smoothing
+    # parameter used by the full-sample variance estimator.
+    eps_bw <- h
 
     # No-split: use full samples, not divided into halves
     Ysortdiff <- diff(sort(Y))

@@ -131,6 +131,13 @@ test_that("bandwidth manuel est bien utilisé", {
   expect_equal(fit$h, 0.5)
 })
 
+test_that("h influe sur l'estimation no-split", {
+  d <- sim_dgp(200, seed = 20)
+  fit_small <- cic(d$Y, d$X, d$Z, method = "no-split", h = 0.05)
+  fit_large <- cic(d$Y, d$X, d$Z, method = "no-split", h = 0.5)
+  expect_false(identical(fit_small$ci$length, fit_large$ci$length))
+})
+
 test_that("h nul ou négatif déclenche une erreur", {
   d <- sim_dgp(200, seed = 19)
   expect_error(cic(d$Y, d$X, d$Z, h = 0), regexp = "h")

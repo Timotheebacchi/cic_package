@@ -8,7 +8,6 @@ using namespace Rcpp;
 // using the sample Y and bandwidth h.
 // Used to estimate f_Y at the transformed quantile points.
 
-// [[Rcpp::export]]
 NumericVector f_y_hat_epanechnikov(NumericVector Y, NumericVector y, double h) {
   int n = Y.size();
   int m = y.size();

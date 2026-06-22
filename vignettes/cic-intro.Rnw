@@ -21,7 +21,7 @@ The estimator is defined as the \textbf{average of quantile-transformed ranks}.
 
 \section{Data Generating Process}
 
-Following Athey \& Imbels, the Monte Carlo DGP uses:
+Following Mugnier & , the Monte Carlo DGP uses:
 
 \[
 F_Y^{-1}(t) = -t^{-d_1} + (1-t)^{-d_2}

@@ -42,26 +42,9 @@
   )
 }
 
-# Computes the eta term from a pre-computed density vector f_vals.
-# Called three times in cic() with h/2, h, 2h to estimate eta_ai.
-#
-# Arguments:
-#   f_vals   : density evaluated at qcdf_transform points  (length n)
-#   Uhat     : estimated ranks FZ(X)                       (length n)
-#   idx_sort : order(Uhat)
-#   k        : findInterval indices
-#   ok       : logical mask (k <= n)
-#   n        : sample size
-.compute_eta_from_f <- function(f_vals, Uhat, idx_sort, k, ok, n) {
-  C2    <- mean(Uhat / f_vals)
-  sinvf <- rev(cumsum(rev(1 / f_vals[idx_sort]))) / n
-  T1    <- numeric(n)
-  T1[ok] <- sinvf[k[ok]]
-  mean((T1 - C2)^2)
-}
-
 # Computes the fast eta variance term without building an n x n matrix.
-# See fast_eta() in the original file for the mathematical derivation.
+# This routine replaced the earlier matrix-based formulation and is the
+# active implementation used by cic().
 #
 # Arguments:
 #   Ydiff1, Ydiff2 : diff(sort(Y)) on each half-sample (or full sample)

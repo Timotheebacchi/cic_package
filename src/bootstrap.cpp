@@ -2,7 +2,6 @@
 #include <algorithm>  // std::lower_bound, std::fill
 #include <cmath>      // std::ceil
 #include <vector>
-using namespace Rcpp;
 
 // ── Bootstrap core ────────────────────────────────────────────────────────────
 // Computes B bootstrap replications of theta_hat.
@@ -20,10 +19,10 @@ using namespace Rcpp;
 // Returns a NumericVector of length B with the bootstrap estimates.
 
 // [[Rcpp::export]]
-NumericVector boot_core(NumericVector Ys, NumericVector Xs,
-                        NumericVector Zs, int B) {
+Rcpp::NumericVector boot_core(Rcpp::NumericVector Ys, Rcpp::NumericVector Xs,
+                              Rcpp::NumericVector Zs, int B) {
   int n1 = Ys.size(), n2 = Xs.size(), n3 = Zs.size();
-  NumericVector results(B);
+  Rcpp::NumericVector results(B);
   std::vector<int>    counts(n3);
   std::vector<double> Xb(n2);
 
@@ -32,11 +31,12 @@ NumericVector boot_core(NumericVector Ys, NumericVector Xs,
 
     // Resample X
     for (int i = 0; i < n2; i++)
-      Xb[i] = Xs[(int)(unif_rand() * n2)];
+      Xb[i] = Xs[std::min((int)(unif_rand() * n2), n2 - 1)];
 
     // Multinomial resample of Z => bootstrapped ecdf
     std::fill(counts.begin(), counts.end(), 0);
-    for (int i = 0; i < n3; i++) counts[(int)(unif_rand() * n3)]++;
+    for (int i = 0; i < n3; i++)
+      counts[std::min((int)(unif_rand() * n3), n3 - 1)]++;
     std::vector<double> cdf_z(n3);
     int cumul = 0;
     for (int j = 0; j < n3; j++) {
@@ -47,7 +47,7 @@ NumericVector boot_core(NumericVector Ys, NumericVector Xs,
     // Compute theta_hat on bootstrap sample
     double s = 0.0;
     for (int i = 0; i < n2; i++) {
-      int pos = (int)(std::lower_bound(Zs.begin(), Zs.end(), Xb[i]) - Zs.begin());
+      int pos = (int)(std::upper_bound(Zs.begin(), Zs.end(), Xb[i]) - Zs.begin());
       double u = (pos == 0) ? 0.0 : (pos >= n3) ? 1.0 : cdf_z[pos - 1];
       int idx_q = (int)std::ceil(u * n1);
       if (idx_q < 1)  idx_q = 1;

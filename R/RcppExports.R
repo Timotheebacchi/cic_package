@@ -4,11 +4,6 @@
 boot_core <- function(Ys, Xs, Zs, B) {
     .Call('_cic_boot_core', PACKAGE = 'cic', Ys, Xs, Zs, B)
 }
-
-f_y_hat_epanechnikov <- function(Y, y, h) {
-    .Call('_cic_f_y_hat_epanechnikov', PACKAGE = 'cic', Y, y, h)
-}
-
 rect_counts_rcpp <- function(X_sorted, x_eval, h_vals) {
     .Call('_cic_rect_counts_rcpp', PACKAGE = 'cic', X_sorted, x_eval, h_vals)
 }

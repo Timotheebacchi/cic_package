@@ -25,18 +25,6 @@ BEGIN_RCPP
 END_RCPP
 }
 // f_y_hat_epanechnikov
-NumericVector f_y_hat_epanechnikov(NumericVector Y, NumericVector y, double h);
-RcppExport SEXP _cic_f_y_hat_epanechnikov(SEXP YSEXP, SEXP ySEXP, SEXP hSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< double >::type h(hSEXP);
-    rcpp_result_gen = Rcpp::wrap(f_y_hat_epanechnikov(Y, y, h));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rect_counts_rcpp
 IntegerVector rect_counts_rcpp(NumericVector X_sorted, NumericVector x_eval, NumericVector h_vals);
 RcppExport SEXP _cic_rect_counts_rcpp(SEXP X_sortedSEXP, SEXP x_evalSEXP, SEXP h_valsSEXP) {
@@ -66,7 +54,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cic_boot_core", (DL_FUNC) &_cic_boot_core, 4},
-    {"_cic_f_y_hat_epanechnikov", (DL_FUNC) &_cic_f_y_hat_epanechnikov, 3},
     {"_cic_rect_counts_rcpp", (DL_FUNC) &_cic_rect_counts_rcpp, 3},
     {"_cic_counts_to_density", (DL_FUNC) &_cic_counts_to_density, 3},
     {NULL, NULL, 0}

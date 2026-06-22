@@ -6,9 +6,9 @@
     GNU Fortran (GCC) 12.2.0
 * running under: macOS Monterey 12.7.4
 * using session charset: UTF-8
-* using option ‘--as-cran’
+* using options ‘--no-manual --as-cran’
 * checking for file ‘./DESCRIPTION’ ... ERROR
-Required fields missing or empty:
-  ‘Author’ ‘Maintainer’
+Required field missing or empty:
+  ‘Author’
 * DONE
 Status: 1 ERROR
