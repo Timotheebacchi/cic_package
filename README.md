@@ -40,6 +40,9 @@ print(fit)
 
 # Get confidence interval
 fit$ci
+
+#Get everything
+summary(fit)
 ```
 
 ## Methods
@@ -62,4 +65,4 @@ MIT + file LICENSE
 
 ## Author
 
-Timothée Bacchi
+Martin Mugnier and Timothée Bacchi
