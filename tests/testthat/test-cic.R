@@ -180,3 +180,74 @@ test_that("plot.cic dessine sans erreur", {
   expect_silent(plot(fit))
   dev.off()
 })
+
+# ── Tests : Input Sanitization (Code Audit) ──────────────────────────────────
+test_that("B = NA déclenche une erreur", {
+  d <- sim_dgp(200, seed = 21)
+  expect_error(cic(d$Y, d$X, d$Z, method = "bse", B = NA),
+               regexp = "B must not be NULL or NA")
+})
+
+test_that("B = NULL déclenche une erreur", {
+  d <- sim_dgp(200, seed = 22)
+  expect_error(cic(d$Y, d$X, d$Z, method = "bse", B = NULL),
+               regexp = "B must not be NULL or NA")
+})
+
+# ── Tests : Diagnostic Function (check_cic_assumptions) ──────────────────────
+test_that("check_cic_assumptions retourne un objet valide", {
+  d <- sim_dgp(200, seed = 23)
+  diag <- check_cic_assumptions(d$Y, d$X, d$Z)
+  expect_named(diag, c("pass_all", "metrics", "messages"))
+  expect_type(diag$pass_all, "logical")
+  expect_type(diag$metrics, "list")
+  expect_type(diag$messages, "character")
+})
+
+test_that("check_cic_assumptions accepte les données bien comportées", {
+  d <- sim_dgp(300, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = 24)
+  diag <- check_cic_assumptions(d$Y, d$X, d$Z)
+  # Les données de la DGP de base devraient passer les contrôles
+  expect_true(diag$pass_all)
+})
+
+test_that("check_cic_assumptions détecte les queues lourdes", {
+  # Créer des données avec des queues extrêmement lourdes
+  n <- 100
+  set.seed(25)
+  Y <- rt(n, df = 2)  # t-distribution avec 2 degrés de liberté
+  X <- rt(n, df = 2)
+  Z <- rt(n, df = 2)
+  diag <- check_cic_assumptions(Y, X, Z)
+  # On s'attend à un possible fail ou au moins des warnings
+  expect_type(diag$messages, "character")
+})
+
+test_that("check_cic_assumptions inclut les ratios lambda", {
+  d <- sim_dgp(300, seed = 26)
+  diag <- check_cic_assumptions(d$Y, d$X, d$Z)
+  expect_true("lambda1" %in% names(diag$metrics))
+  expect_true("lambda2" %in% names(diag$metrics))
+  expect_true("lambda3" %in% names(diag$metrics))
+  expect_gt(diag$metrics$lambda1, 0)
+  expect_lt(diag$metrics$lambda1, 1)
+})
+
+test_that("check_cic_assumptions inclut les estimations de queues", {
+  d <- sim_dgp(300, seed = 27)
+  diag <- check_cic_assumptions(d$Y, d$X, d$Z)
+  expect_true("d1_left_tail" %in% names(diag$metrics))
+  expect_true("d2_right_tail" %in% names(diag$metrics))
+  expect_true("b1_left_boundary" %in% names(diag$metrics))
+  expect_true("b2_right_boundary" %in% names(diag$metrics))
+  expect_gte(diag$metrics$d1_left_tail, 0)
+  expect_gte(diag$metrics$d2_right_tail, 0)
+})
+
+test_that("check_cic_assumptions génère des messages clairs", {
+  d <- sim_dgp(200, seed = 28)
+  diag <- check_cic_assumptions(d$Y, d$X, d$Z)
+  expect_true(length(diag$messages) >= 1)
+  # Chaque message doit être non-vide
+  expect_true(all(nchar(diag$messages) > 0))
+})

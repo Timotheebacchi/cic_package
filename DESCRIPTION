@@ -7,7 +7,11 @@ Description: Implements the Changes-in-Changes estimator (Athey & Imbens, 2006)
     defined as the average of the quantile-transformed ranks. Provides
     asymptotic confidence intervals via a full-sample (no-split) variance estimator and bootstrap alternatives (percentile and
     standard-error). The core computations are written in C++ via Rcpp for
-    performance.
+    performance. Includes a comprehensive diagnostic tool, check_cic_assumptions(),
+    that validates empirical data against theoretical assumptions (sampling balance,
+    continuity, tail behavior, and convergence rates). Features robust input
+    validation, graceful error handling for missing compiled code, and pure R
+    fallback implementations for maximum compatibility.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
