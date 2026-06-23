@@ -78,7 +78,7 @@ confint.cic <- function(object, parm = NULL, level = object$level, ...) {
     )
   }
   ci <- object$ci[, c("lower", "upper")]
-  rownames(ci) <- ci$method
+  rownames(ci) <- object$ci$method
   as.matrix(ci)
 }
 

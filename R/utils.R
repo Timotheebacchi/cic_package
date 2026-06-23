@@ -235,23 +235,31 @@
   list(b1 = b1_est, b2 = b2_est)
 }
 
-# Diagnostic function for CiC assumptions
-#
-# Evaluates whether empirical data satisfy the theoretical assumptions
-# required for the CiC estimator's consistency and convergence.
-#
-# @param Y Numeric vector. Outcome sample (length n1).
-# @param X Numeric vector. Covariate sample (length n2).
-# @param Z Numeric vector. Instrument sample (length n3).
-#
-# @return
-# A list with:
-#   - `pass_all`: Boolean indicating if all checks passed.
-#   - `metrics`: Named list containing calculated diagnostic values.
-#   - `messages`: Character vector with warnings or success messages.
-#
-
-.check_cic_assumptions <- function(Y, X, Z) {
+#' @title Check CiC Model Assumptions
+#' @description Validates that data satisfy the theoretical requirements for the CiC estimator.
+#' @param Y Numeric vector: Outcome variable
+#' @param X Numeric vector: Treatment/endogenous variable
+#' @param Z Numeric vector: Instrument/exogenous variable
+#' @return A list with elements:
+#'   \item{pass_all}{Logical: TRUE if all checks passed}
+#'   \item{metrics}{Named list of diagnostic metrics:
+#'     \itemize{
+#'       \item{lambda1, lambda2, lambda3}{Sample size ratios}
+#'       \item{d1_left_tail, d2_right_tail}{Tail indices}
+#'       \item{b1_left_boundary, b2_right_boundary}{Boundary density estimates}
+#'       \item{autocorrelation_p}{Ljung-Box test p-value}
+#'       \item{uniqueness_ratio}{Ratio of unique values}
+#'     }
+#'   }
+#'   \item{messages}{Character vector: Warnings or success messages}
+#' @examples
+#' set.seed(42)
+#' d <- sim_dgp(500)
+#' diag <- check_cic_assumptions(d$Y, d$X, d$Z)
+#' print(diag)
+#' @seealso \code{\link{cic}}, \code{\link{sim_dgp}}
+#' @export
+check_cic_assumptions <- function(Y, X, Z) {
   # Input validation
   stopifnot(
     is.numeric(Y) && length(Y) >= 4,

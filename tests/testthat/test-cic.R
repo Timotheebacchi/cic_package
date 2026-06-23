@@ -170,9 +170,12 @@ test_that("coef.cic retourne theta_hat", {
 test_that("confint.cic retourne les intervalles de confiance", {
   d <- sim_dgp(200, seed = 15)
   fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "bse"), B = 200)
-  expect_equal(confint(fit), as.matrix(fit$ci[, c("lower", "upper")]))
+  ci <- confint(fit)
+  expected <- as.matrix(fit$ci[, c("lower", "upper")])
+  rownames(expected) <- fit$ci$method
+  expect_equal(ci, expected)
+  expect_equal(rownames(ci), c("no-split", "bse"))
 })
-
 test_that("plot.cic dessine sans erreur", {
   d <- sim_dgp(200, seed = 16)
   fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "bpc"), B = 200)
@@ -196,7 +199,7 @@ test_that("B = NULL déclenche une erreur", {
 
 # ── Tests : Diagnostic Function (check_cic_assumptions) ──────────────────────
 test_that("check_cic_assumptions retourne un objet valide", {
-  d <- sim_dgp(200, seed = 23)
+  d <- sim_dgp(1000, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = 24)
   diag <- check_cic_assumptions(d$Y, d$X, d$Z)
   expect_named(diag, c("pass_all", "metrics", "messages"))
   expect_type(diag$pass_all, "logical")

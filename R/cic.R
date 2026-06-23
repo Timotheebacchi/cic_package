@@ -1,55 +1,38 @@
+#' @title Changes-in-Changes Estimator
+#' @description Computes the CiC estimator for nonlinear difference-in-differences models
+#' as described in Athey & Imbens (2006).
 #' @useDynLib cic, .registration = TRUE
-#' @importFrom Rcpp evalCpp
+#' @importFrom Rcpp evalCpp       
 #' @import stats
-NULL
-
-#' Changes-in-Changes estimator
-#'
-#' Computes the Changes-in-Changes (CiC) estimator
-#' \deqn{\hat\theta = \frac{1}{n_2}\sum_{j=1}^{n_2} \hat F_Y^{-1}(\hat F_Z(X_j))}
-#' and returns asymptotic confidence intervals based on the chosen variance
-#' estimator(s).
-#'
-#' @param Y Numeric vector. Outcome sample of length \eqn{n_1}.
-#' @param X Numeric vector. Covariate sample of length \eqn{n_2}.
-#' @param Z Numeric vector. Instrument sample of length \eqn{n_3}.
-#' @param method Character vector. One or more of `"no-split"`, `"bse"`, `"bpc"`.
-#'   Defaults to all three.
-#'   * `"no-split"` : asymptotic CI using the full-sample (no-split) variance estimator.
-#'   * `"bse"`      : bootstrap CI using the standard-error bootstrap.
-#'   * `"bpc"`      : bootstrap CI using the percentile bootstrap.
-#' @param B Integer. Number of bootstrap replications. Ignored if neither
-#'   `"bse"` nor `"bpc"` is in `method`. Must be >= 200. Default: 999.
-#' @param h Numeric or `NULL`. Bandwidth for the Epanechnikov KDE used in the
-#'   `"no-split"` (full-sample) variance estimator. If `NULL` (default), Silverman's
-#'   rule-of-thumb is applied automatically.
-#' @param level Numeric in (0, 1). Confidence level. Default: 0.95.
-#'
-#' @return An object of class `"cic"`, a list containing:
-#'   * `theta_hat`  : point estimate \eqn{\hat\theta}.
-#'   * `ci`         : data frame with columns `method`, `lower`, `upper`,
-#'     `length` for each requested method.
-#'   * `level`      : confidence level used.
-#'   * `n`          : named integer vector `c(n1, n2, n3)`.
-#'   * `method`     : methods requested.
-#'   * `h`          : bandwidth used (NA if only bootstrap methods requested).
-#'
+#' @param Y Numeric vector: Outcome variable
+#' @param X Numeric vector: Treatment/endogenous variable
+#' @param Z Numeric vector: Instrument/exogenous variable
+#' @param method Character vector: Estimation method(s). Options are:
+#'   \itemize{
+#'     \item{"no-split"}{Nonparametric method using full sample (fastest)}
+#'     \item{"bse"}{Bootstrap standard-error method}
+#'     \item{"bpc"}{Bootstrap percentile method}
+#'   }
+#' @param B Integer: Number of bootstrap replications (default: 200). Only used for "bse" and "bpc".
+#' @param h Numeric: Bandwidth parameter for no-split method (default: NULL = auto)
+#' @param level Numeric: Confidence level for intervals (default: 0.95)
+#' @return An S3 object of class 'cic' with elements:
+#'   \item{theta_hat}{Estimated CiC parameter}
+#'   \item{ci}{Data frame with confidence intervals (columns: lower, upper, length, method)}
+#'   \item{n}{Sample sizes (Y, X, Z)}
+#'   \item{method}{Estimation method(s) used}
+#'   \item{h}{Bandwidth used (for no-split)}
+#'   \item{level}{Confidence level}
 #' @examples
 #' set.seed(42)
-#' n <- 200
-#' Y <- rnorm(n)
-#' Z <- rnorm(n)
-#' X <- qnorm(pbeta(pnorm(Z), 0.95, 0.95))
-#' fit <- cic(Y, X, Z)
-#' print(fit)
+#' d <- sim_dgp(500)
+#' fit <- cic(d$Y, d$X, d$Z, method = "no-split")
 #' summary(fit)
-#'
+#' @seealso \code{\link{check_cic_assumptions}}, \code{\link{sim_dgp}}
+#' @references Athey, S., & Imbens, G. W. (2006). Identification and inference in
+#'   nonlinear difference-in-differences models. Econometrica, 74(2), 431-497.
 #' @export
-cic <- function(Y, X, Z,
-                method = c("no-split", "bse", "bpc"),
-                B      = 999L,
-                h      = NULL,
-                level  = 0.95) {
+cic <- function(Y, X, Z, method = c("no-split", "bse", "bpc"), B = 200, h = NULL, level = 0.95) {
 
   # ── Input checks ─────────────────────────────────────────────────────────────
   method <- match.arg(method, several.ok = TRUE)
@@ -130,7 +113,7 @@ cic <- function(Y, X, Z,
     # Use internal R implementation of bootstrap core
     # (fallback to pure R if Rcpp version unavailable)
     tryCatch({
-      boot_vals <- .boot_core(sort(Y), X, sort(Z), B = B)
+      boot_vals <-  boot_core(sort(Y), X, sort(Z), B = B)
     }, error = function(e) {
       stop(
         "Bootstrap computation failed. This may occur if the compiled C++ code ",

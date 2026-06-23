@@ -2,68 +2,61 @@
 % Please edit documentation in R/cic.R
 \name{cic}
 \alias{cic}
-\title{Changes-in-Changes estimator}
+\title{Changes-in-Changes Estimator}
 \usage{
 cic(
   Y,
   X,
   Z,
   method = c("no-split", "bse", "bpc"),
-  B = 999L,
+  B = 200,
   h = NULL,
   level = 0.95
 )
 }
 \arguments{
-\item{Y}{Numeric vector. Outcome sample of length \eqn{n_1}.}
+\item{Y}{Numeric vector: Outcome variable}
 
-\item{X}{Numeric vector. Covariate sample of length \eqn{n_2}.}
+\item{X}{Numeric vector: Treatment/endogenous variable}
 
-\item{Z}{Numeric vector. Instrument sample of length \eqn{n_3}.}
+\item{Z}{Numeric vector: Instrument/exogenous variable}
 
-\item{method}{Character vector. One or more of \code{"no-split"}, \code{"bse"}, \code{"bpc"}.
-Defaults to all three.
+\item{method}{Character vector: Estimation method(s). Options are:
 \itemize{
-\item \code{"no-split"} : asymptotic CI using the full-sample (no-split) variance estimator.
-\item \code{"bse"}      : bootstrap CI using the standard-error bootstrap.
-\item \code{"bpc"}      : bootstrap CI using the percentile bootstrap.
+\item{"no-split"}{Nonparametric method using full sample (fastest)}
+\item{"bse"}{Bootstrap standard-error method}
+\item{"bpc"}{Bootstrap percentile method}
 }}
 
-\item{B}{Integer. Number of bootstrap replications. Ignored if neither
-\code{"bse"} nor \code{"bpc"} is in \code{method}. Must be >= 200. Default: 999.}
+\item{B}{Integer: Number of bootstrap replications (default: 200). Only used for "bse" and "bpc".}
 
-\item{h}{Numeric or \code{NULL}. Bandwidth for the Epanechnikov KDE used in the
-\code{"no-split"} (full-sample) variance estimator. If \code{NULL} (default), Silverman's
-rule-of-thumb is applied automatically.}
+\item{h}{Numeric: Bandwidth parameter for no-split method (default: NULL = auto)}
 
-\item{level}{Numeric in (0, 1). Confidence level. Default: 0.95.}
+\item{level}{Numeric: Confidence level for intervals (default: 0.95)}
 }
 \value{
-An object of class \code{"cic"}, a list containing:
-\itemize{
-\item \code{theta_hat}  : point estimate \eqn{\hat\theta}.
-\item \code{ci}         : data frame with columns \code{method}, \code{lower}, \code{upper},
-\code{length} for each requested method.
-\item \code{level}      : confidence level used.
-\item \code{n}          : named integer vector \code{c(n1, n2, n3)}.
-\item \code{method}     : methods requested.
-\item \code{h}          : bandwidth used (NA if only bootstrap methods requested).
-}
+An S3 object of class 'cic' with elements:
+\item{theta_hat}{Estimated CiC parameter}
+\item{ci}{Data frame with confidence intervals (columns: lower, upper, length, method)}
+\item{n}{Sample sizes (Y, X, Z)}
+\item{method}{Estimation method(s) used}
+\item{h}{Bandwidth used (for no-split)}
+\item{level}{Confidence level}
 }
 \description{
-Computes the Changes-in-Changes (CiC) estimator
-\deqn{\hat\theta = \frac{1}{n_2}\sum_{j=1}^{n_2} \hat F_Y^{-1}(\hat F_Z(X_j))}
-and returns asymptotic confidence intervals based on the chosen variance
-estimator(s).
+Computes the CiC estimator for nonlinear difference-in-differences models
+as described in Athey & Imbens (2006).
 }
 \examples{
 set.seed(42)
-n <- 200
-Y <- rnorm(n)
-Z <- rnorm(n)
-X <- qnorm(pbeta(pnorm(Z), 0.95, 0.95))
-fit <- cic(Y, X, Z)
-print(fit)
+d <- sim_dgp(500)
+fit <- cic(d$Y, d$X, d$Z, method = "no-split")
 summary(fit)
-
+}
+\references{
+Athey, S., & Imbens, G. W. (2006). Identification and inference in
+nonlinear difference-in-differences models. Econometrica, 74(2), 431-497.
+}
+\seealso{
+\code{\link{check_cic_assumptions}}, \code{\link{sim_dgp}}
 }

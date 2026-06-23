@@ -20,8 +20,7 @@ Imports:
     Rcpp (>= 1.0.0)
 Suggests:
     testthat (>= 3.0.0),
-    knitr,
-    rmarkdown
+    knitr
 LinkingTo:
     Rcpp
 VignetteBuilder: knitr
