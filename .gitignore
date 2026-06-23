@@ -25,5 +25,8 @@ src/config.h
 
 _Rtestlib/
 ..Rcheck/
-vignettes/cic-intro.R_Rtestlib/
 
+#vignettes
+inst/doc/
+vignettes/*.html
+vignettes/*.pdf
