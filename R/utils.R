@@ -286,7 +286,7 @@ check_cic_assumptions <- function(Y, X, Z) {
       paste0(
         "Warning [Assumption 1(iii)]: Sample size ratios are highly imbalanced. ",
         "Asymptotic convergence may be unstable. ",
-        sprintf("(λ₁=%.3f, λ₂=%.3f, λ₃=%.3f)", lambda1, lambda2, lambda3)
+        sprintf("(\u03bb\u2081=%.3f, \u03bb\u2082=%.3f, \u03bb\u2083=%.3f)", lambda1, lambda2, lambda3)
       )
     )
   }
@@ -369,11 +369,11 @@ check_cic_assumptions <- function(Y, X, Z) {
       messages,
       paste0(
         "Convergence Alert [Assumption 2(iv)]: The combined tail heaviness of ",
-        "your data (b + d ≥ 0.5) exceeds the theoretical threshold. ",
+        "your data (b + d \u2265 0.5) exceeds the theoretical threshold. ",
         "The estimator will experience severe convergence slowdowns or ",
         "non-normal asymptotics. ",
         sprintf(
-          "(Left: b₁+d₁=%.3f, Right: b₂+d₂=%.3f)",
+          "(Left: b\u2081+d\u2081=%.3f, Right: b\u2082+d\u2082=%.3f)",
           convergence_left, convergence_right
         )
       )

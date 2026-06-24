@@ -7,7 +7,7 @@
 qY_dgp(t, d1 = 0, d2 = 0.05)
 }
 \arguments{
-\item{t}{Vector of probabilities in \link{0,1}}
+\item{t}{Numeric vector in \eqn{[0,1]}.}
 
 \item{d1}{Left tail parameter (default: 0)}
 

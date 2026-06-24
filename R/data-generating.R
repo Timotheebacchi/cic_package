@@ -2,7 +2,7 @@
 #' @description Quantile function from the Monte Carlo section of Athey & Imbens (2006):
 #'   \deqn{F_Y^{-1}(t) = -t^{-d1} + (1-t)^{-d2}}
 #' with the convention that d1 = 0 => t^{-d1} = 1, d2 = 0 => (1-t)^{-d2} = 1.
-#' @param t Vector of probabilities in [0,1]
+#' @param t Numeric vector in \eqn{[0,1]}.
 #' @param d1 Left tail parameter (default: 0)
 #' @param d2 Right tail parameter (default: 0.05)
 #' @return Numeric vector of quantiles
