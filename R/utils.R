@@ -252,7 +252,7 @@
 #'     }
 #'   }
 #'   \item{messages}{Character vector: Warnings or success messages}
-#' #' @export
+#' @export
 check_cic_assumptions <- function(Y, X, Z) {
   # Input validation
   stopifnot(
