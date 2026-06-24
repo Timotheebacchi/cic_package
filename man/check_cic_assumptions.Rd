@@ -26,7 +26,6 @@ A list with elements:
 }
 }
 \item{messages}{Character vector: Warnings or success messages}
-#' @export
 }
 \description{
 Validates that data satisfy the theoretical requirements for the CiC estimator.
