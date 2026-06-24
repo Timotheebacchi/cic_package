@@ -88,7 +88,6 @@
 
   - **Robust input validation**: B parameter sanitization with explicit NA/NULL checks
   - **Graceful error handling**: Informative messages when Rcpp compiled code is unavailable
-  - **Bootstrap implementation**: Pure R fallback via `.boot_core()` for maximum compatibility
   - **Diagnostic capabilities**: Comprehensive `check_cic_assumptions()` function for empirical validation
 
   ## References
