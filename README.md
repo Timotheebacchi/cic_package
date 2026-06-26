@@ -1,24 +1,23 @@
   # cic: Changes-in-Changes Estimator
 
-  An R package implementing the plug-in **Changes-in-Changes (CiC) estimator** from Mugnier & d'Haultefoeuille & Chhor & l'Hour with asymptotic confidence intervals and bootstrap alternatives. 
-  It also constructs some tests to look if the estimator is usable with the data given and respects assumptions given in Asymptotic Properties of Empirical Quantile-Based Estimators (2026)
+  `cic` is an R package for the Changes-in-Changes estimator of Athey & Imbens (2006). It computes the plug-in estimate, provides several confidence interval methods, and includes a diagnostic helper to check whether the input data look compatible with the model assumptions.
 
   ## Features
 
-  - **Core estimator**: Average of quantile-transformed ranks
-  - **Confidence intervals via three methods**:
-    - No-split / Full-sample (nonparametric, uses all data)
-    - Split-sample variance estimator
-    - KDE-based variance estimator
-    - Bootstrap standard-error (bse)
-    - Bootstrap percentile (bpc)
-  - **Performance**: C++ backend via Rcpp
-  - **Validated**: Comprehensive Monte Carlo tests with known true parameter
+  - Point estimation of the CiC parameter from `Y`, `X`, and `Z`
+  - Confidence intervals with five methods:
+    - `"no-split"`
+    - `"split"`
+    - `"kde"`
+    - `"bse"`
+    - `"bpc"`
+  - Diagnostic checks via `check_cic_assumptions()`
+  - Rcpp-backed computation for the core routines, with a pure R fallback where available
+  - Simulation helpers `sim_dgp()`, `qY_dgp()`, and `theta_true()`
 
   ## Installation
 
   ```r
-  # Install from GitHub
   devtools::install_github("Timotheebacchi/cic_package")
   ```
 
@@ -27,74 +26,51 @@
   ```r
   library(cic)
 
-  # Simulate from the DGP (Athey & Imbens 2006)
   set.seed(42)
-  n <- 500
-  W <- runif(n)
-  Y <- -W^(-0.2) + (1-W)^(-0.05)  # Quantile function
-  X <- qnorm(rbeta(n, 1, 1.05))   # Covariate
-  Z <- rnorm(n)                     # Instrument
+  d <- sim_dgp(500)
 
-  # Check data consistency with CiC assumptions
-  diag <- check_cic_assumptions(Y, X, Z)
-  if (diag$pass_all) {
-    cat("Data passes all diagnostic checks.\n")
-  }
+  diag <- check_cic_assumptions(d$Y, d$X, d$Z)
+  diag$pass_all
 
-  # Estimate with no-split CI
-  fit <- cic(Y, X, Z, method = "no-split")
+  fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "split", "kde"))
 
-  # View results
-  print(fit)
-
-  # Get confidence interval
+  fit
   fit$ci
-
-  #Get everything
   summary(fit)
   ```
 
-  ## Diagnostic Tool
+  ## Diagnostics
 
-  Before estimating the CiC model, use `check_cic_assumptions()` to validate that your data satisfy the theoretical requirements:
+  `check_cic_assumptions()` returns a list with:
 
-  ```r
-  # Evaluate data against CiC assumptions
-  diag <- check_cic_assumptions(Y, X, Z)
+  - `pass_all`: overall logical result
+  - `metrics`: sample ratios, tail indices, boundary estimates, and related checks
+  - `messages`: warnings or success messages
 
-  # Returns a list with:
-  # - $pass_all: Boolean indicating if all checks passed
-  # - $metrics: Calculated diagnostic values (sample ratios, tail indices, etc.)
-  # - $messages: Warnings or success messages
-  ```
-
-  The diagnostic evaluates:
-
-  1. **Sampling balance** (Assumption 1): Checks sample size ratios and autocorrelation via Ljung-Box test
-  2. **Continuity** (Assumption 2): Tests for absolute continuity via uniqueness ratios
-  3. **Tail behavior & convergence** (Assumption 2): Estimates tail indices and boundary densities; flags severe convergence issues if $b + d \geq 0.5$
+  It is designed as a quick pre-check before running `cic()` on empirical data.
 
   ## Methods
 
-  The `cic()` function supports:
+  | Method | Description |
+  |---|---|
+  | `"no-split"` | Full-sample nonparametric variance estimator |
+  | `"split"` | Sample-splitting variance estimator |
+  | `"kde"` | Epanechnikov KDE-based variance estimator |
+  | `"bse"` | Bootstrap standard-error interval |
+  | `"bpc"` | Bootstrap percentile interval |
 
-  | Method | Speed | Notes |
-  |--------|-------|-------|
-  | `"no-split"` | Fast | Nonparametric, uses full sample |
-  | `"bse"` | Medium | Bootstrap standard-error |
-  | `"bpc"` | Medium | Bootstrap percentile |
+  You can supply one method or several methods at once; `cic()` returns the intervals in the order requested.
 
-  ## Code Quality & Improvements
+  ## Package Contents
 
-  This package has been audited and enhanced with:
+  - `cic()` for estimation and confidence intervals
+  - `check_cic_assumptions()` for diagnostics
+  - `sim_dgp()` for a reproducible data-generating process
+  - `qY_dgp()` and `theta_true()` for simulation support
 
-  - **Robust input validation**: B parameter sanitization with explicit NA/NULL checks
-  - **Graceful error handling**: Informative messages when Rcpp compiled code is unavailable
-  - **Diagnostic capabilities**: Comprehensive `check_cic_assumptions()` function for empirical validation
+  ## Reference
 
-  ## References
-
-  - Athey, S., & Imbens, G. W. (2006). Identification and inference in nonlinear difference-in-differences models. Econometrica, 74(2), 431–497.
+  Athey, S., & Imbens, G. W. (2006). Identification and inference in nonlinear difference-in-differences models. Econometrica, 74(2), 431-497.
 
   ## License
 
@@ -102,4 +78,4 @@
 
   ## Author
 
-  Martin Mugnier and Timothée Bacchi
+  Timothée Bacchi
