@@ -88,12 +88,12 @@
 }
 
 # Default plug-in bandwidth for the Epanechnikov KDE.
-# Rule: Silverman's rule-of-thumb adapted for the quantile density context.
+# This is the automatic fallback used when the user does not supply h.
 # Can be overridden by the user via the h argument of cic().
 .default_bandwidth <- function(Y) {
   n  <- length(Y)
   sd_Y <- stats::sd(Y)
-  # Silverman (1986): h = 1.06 * sigma * n^{-1/5}
+  # Heuristic bandwidth based on the sample scale and sample size.
   1.06 * sd_Y * n^(-1/5)
 }
 

@@ -68,7 +68,7 @@ summary.cic <- function(object, digits = 4, ...) {
   cat(sprintf("\nConfidence level : %.0f%%\n", object$level * 100))
 
   if (!is.na(object$h))
-    cat(sprintf("Bandwidth (h)    : %.4f  [Silverman rule-of-thumb]\n",
+    cat(sprintf("Bandwidth (h)    : %.4f  [automatic plug-in default]\n",
                 object$h))
 
   cat(rep("-", 44), "\n", sep = "")
