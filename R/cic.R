@@ -1,6 +1,6 @@
 #' @title Changes-in-Changes Estimator
 #' @description Computes the CiC estimator for nonlinear difference-in-differences models
-#' as described in Athey & Imbens (2006).
+#' as described in the manuscript by Chhor, D'Haultfoeuille, L'Hour, and Mugnier.
 #' @useDynLib cic, .registration = TRUE
 #' @importFrom Rcpp evalCpp         
 #' @import stats
@@ -31,8 +31,8 @@
 #' fit <- cic(d$Y, d$X, d$Z, method = "no-split")
 #' summary(fit)
 #' @seealso \code{\link{check_cic_assumptions}}, \code{\link{sim_dgp}}
-#' @references Athey, S., & Imbens, G. W. (2006). Identification and inference in
-#'   nonlinear difference-in-differences models. Econometrica, 74(2), 431-497.
+#' @references Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026).
+#'   Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript.
 #' @export
 cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B = 200, h = NULL, level = 0.95) {
 

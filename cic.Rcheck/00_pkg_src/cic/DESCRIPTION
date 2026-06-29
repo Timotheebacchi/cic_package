@@ -3,9 +3,9 @@ Title: Changes-in-Changes Estimator with Asymptotic Confidence
         Intervals
 Version: 0.1.0
 Authors@R: person("Timothée", "Bacchi", email = "timothee.bacchi@etu.minesparis.psl.eu", role = c("aut", "cre"))
-Author: Timothée Bacchi
 Maintainer: Timothée Bacchi <timothee.bacchi@etu.minesparis.psl.eu>
-Description: Implements the Changes-in-Changes estimator (Athey & Imbens, 2006)
+Description: Implements the Changes-in-Changes estimator and asymptotic
+    confidence intervals for empirical quantile-based estimators.
     defined as the average of the quantile-transformed ranks. Provides
     asymptotic confidence intervals via a full-sample (no-split) variance estimator and bootstrap alternatives (percentile and
     standard-error). The core computations are written in C++ via Rcpp for
@@ -24,4 +24,5 @@ LinkingTo: Rcpp
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 NeedsCompilation: yes
-Packaged: 2026-06-29 11:05:49 UTC; timbak
+Packaged: 2026-06-29 11:28:23 UTC; timbak
+Author: Timothée Bacchi [aut, cre]

@@ -5,7 +5,7 @@ bibentry(
   title = "Asymptotic Properties of Empirical Quantile-Based Estimators",
   author = c(
     person(given = "Julien", family = "Chhor"),
-    person(given = "Xavier", family = "D'Haultfœuille"),
+    person(given = "Xavier", family = "D'Haultfoeuille"),
     person(given = "Jérémy", family = "L'Hour"),
     person(given = "Martin", family = "Mugnier")
   ),

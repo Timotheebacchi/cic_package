@@ -20,6 +20,18 @@ Type 'q()' to quit R.
 > pkgname <- "cic"
 > source(file.path(R.home("share"), "R", "examples-header.R"))
 > options(warn = 1)
+> base::assign(".ExTimings", "cic-Ex.timings", pos = 'CheckExEnv')
+> base::cat("name\tuser\tsystem\telapsed\n", file=base::get(".ExTimings", pos = 'CheckExEnv'))
+> base::assign(".format_ptime",
++ function(x) {
++   if(!is.na(x[4L])) x[1L] <- x[1L] + x[4L]
++   if(!is.na(x[5L])) x[2L] <- x[2L] + x[5L]
++   options(OutDec = '.')
++   format(x[1L:3L], digits = 7L)
++ },
++ pos = 'CheckExEnv')
+> 
+> ### * </HEADER>
 > library('cic')
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
@@ -30,6 +42,7 @@ Type 'q()' to quit R.
 > 
 > flush(stderr()); flush(stdout())
 > 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 > ### Name: cic
 > ### Title: Changes-in-Changes Estimator
 > ### Aliases: cic
@@ -60,14 +73,17 @@ Econometric output:
 > 
 > 
 > 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("cic", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
 > cleanEx()
 > nameEx("qY_dgp")
 > ### * qY_dgp
 > 
 > flush(stderr()); flush(stdout())
 > 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 > ### Name: qY_dgp
-> ### Title: Quantile Function for Athey & Imbens (2006) DGP
+> ### Title: Quantile Function for the CiC Simulation DGP
 > ### Aliases: qY_dgp
 > 
 > ### ** Examples
@@ -77,14 +93,17 @@ Econometric output:
 > 
 > 
 > 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("qY_dgp", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
 > cleanEx()
 > nameEx("sim_dgp")
 > ### * sim_dgp
 > 
 > flush(stderr()); flush(stdout())
 > 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 > ### Name: sim_dgp
-> ### Title: Simulate Data from Athey & Imbens (2006) DGP
+> ### Title: Simulate Data from the CiC Simulation DGP
 > ### Aliases: sim_dgp
 > 
 > ### ** Examples
@@ -401,14 +420,17 @@ $Z
 > 
 > 
 > 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("sim_dgp", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
 > cleanEx()
 > nameEx("theta_true")
 > ### * theta_true
 > 
 > flush(stderr()); flush(stdout())
 > 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 > ### Name: theta_true
-> ### Title: True CiC Parameter for Athey & Imbens (2006) DGP
+> ### Title: True CiC Parameter for the Simulation DGP
 > ### Aliases: theta_true
 > 
 > ### ** Examples
@@ -418,12 +440,14 @@ $Z
 > 
 > 
 > 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("theta_true", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
 > ### * <FOOTER>
 > ###
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.295 0.038 0.461 0 0 
+Time elapsed:  0.377 0.03 0.488 0 0 
 > grDevices::dev.off()
 null device 
           1 

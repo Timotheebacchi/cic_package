@@ -2,7 +2,7 @@
 % Please edit documentation in R/data-generating.R
 \name{theta_true}
 \alias{theta_true}
-\title{True CiC Parameter for Athey & Imbens (2006) DGP}
+\title{True CiC Parameter for the Simulation DGP}
 \usage{
 theta_true(b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05)
 }

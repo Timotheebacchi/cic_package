@@ -2,7 +2,7 @@
 % Please edit documentation in R/data-generating.R
 \name{qY_dgp}
 \alias{qY_dgp}
-\title{Quantile Function for Athey & Imbens (2006) DGP}
+\title{Quantile Function for the CiC Simulation DGP}
 \usage{
 qY_dgp(t, d1 = 0, d2 = 0.05)
 }
@@ -17,7 +17,7 @@ qY_dgp(t, d1 = 0, d2 = 0.05)
 Numeric vector of quantiles
 }
 \description{
-Quantile function from the Monte Carlo section of Athey & Imbens (2006):
+Quantile function from the Monte Carlo section of the CiC simulation design:
 \deqn{F_Y^{-1}(t) = -t^{-d1} + (1-t)^{-d2}}
 with the convention that d1 = 0 => t^{-d1} = 1, d2 = 0 => (1-t)^{-d2} = 1.
 }

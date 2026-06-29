@@ -1,5 +1,5 @@
-#' @title Quantile Function for Athey & Imbens (2006) DGP
-#' @description Quantile function from the Monte Carlo section of Athey & Imbens (2006):
+#' @title Quantile Function for the CiC Simulation DGP
+#' @description Quantile function from the Monte Carlo section of the CiC simulation design:
 #'   \deqn{F_Y^{-1}(t) = -t^{-d1} + (1-t)^{-d2}}
 #' with the convention that d1 = 0 => t^{-d1} = 1, d2 = 0 => (1-t)^{-d2} = 1.
 #' @param t Numeric vector in \eqn{[0,1]}.
@@ -15,7 +15,7 @@ qY_dgp <- function(t, d1 = 0, d2 = 0.05) {
   -term1 + term2
 }
 
-#' @title True CiC Parameter for Athey & Imbens (2006) DGP
+#' @title True CiC Parameter for the Simulation DGP
 #' @description Computes the true theta_0 parameter for the DGP:
 #'   \deqn{theta_0 = [B(1-b1, 1-b2-d2) - B(1-b1-d1, 1-b2)] / B(1-b1, 1-b2)}
 #' where B is the beta function.
@@ -32,9 +32,9 @@ theta_true <- function(b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05) {
     beta(1 - b1, 1 - b2)
 }
 
-#' @title Simulate Data from Athey & Imbens (2006) DGP
+#' @title Simulate Data from the CiC Simulation DGP
 #' @description Simulates a dataset from the Data Generating Process (DGP)
-#' described in Athey & Imbens (2006).
+#' used in the package examples and Monte Carlo checks.
 #' @param n Sample size
 #' @param b1 Left boundary parameter (default: 0)
 #' @param b2 Right boundary parameter (default: 0.05)

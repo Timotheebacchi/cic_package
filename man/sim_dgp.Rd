@@ -2,7 +2,7 @@
 % Please edit documentation in R/data-generating.R
 \name{sim_dgp}
 \alias{sim_dgp}
-\title{Simulate Data from Athey & Imbens (2006) DGP}
+\title{Simulate Data from the CiC Simulation DGP}
 \usage{
 sim_dgp(n, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = NULL)
 }
@@ -27,7 +27,7 @@ A list with elements:
 }
 \description{
 Simulates a dataset from the Data Generating Process (DGP)
-described in Athey & Imbens (2006).
+used in the package examples and Monte Carlo checks.
 }
 \examples{
 set.seed(42)

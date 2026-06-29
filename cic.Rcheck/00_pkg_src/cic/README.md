@@ -32,7 +32,7 @@
   diag <- check_cic_assumptions(d$Y, d$X, d$Z)
   diag$pass_all
 
-  fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "split", "kde", "bse" , "bpc")
+  fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "split", "kde", "bse", "bpc"))
 
   fit
   fit$ci
@@ -61,6 +61,18 @@
 
   You can supply one method or several methods at once; `cic()` returns the intervals in the order requested.
 
+  ## Asymptotic Confidence Intervals
+
+  `cic()` provides several ways to build confidence intervals around the point estimate:
+
+  - `"no-split"`: full-sample asymptotic interval based on the plug-in variance estimator
+  - `"split"`: asymptotic interval built with sample splitting
+  - `"kde"`: asymptotic interval using an Epanechnikov kernel density estimate
+  - `"bse"`: bootstrap standard-error interval
+  - `"bpc"`: bootstrap percentile interval
+
+  The first three methods are the main asymptotic alternatives; the bootstrap methods are useful robustness checks when you want to compare finite-sample behavior.
+
   ## Package Contents
 
   - `cic()` for estimation and confidence intervals
@@ -70,7 +82,7 @@
 
   ## Reference
 
-  Chhor, J., D'Haultfœuille, X., L'Hour, J., & Mugnier, M. (2026). Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript.
+  Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026). Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript.
 
   ## License
 
