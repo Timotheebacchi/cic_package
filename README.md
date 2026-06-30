@@ -49,37 +49,37 @@
 
   It is designed as a quick pre-check before running `cic()` on empirical data.
 
-  ## Rappel mathématique des méthodes
+  ## Mathematical Reminder for the Methods
 
-  Soit $F_Z$ la fonction de répartition empirique de $Z$ et $Q_Y(u)=F_Y^{-1}(u)$ la quantile left-continuous de $Y$. Le point estimateur commun à toutes les méthodes est
+  Let $F_Z$ denote the empirical distribution function of $Z$ and let $Q_Y(u)=F_Y^{-1}(u)$ be the left-continuous quantile of $Y$. The common point estimator used by all methods is
 
   $$
   \hat\theta = \frac{1}{n}\sum_{i=1}^n Q_Y(F_Z(X_i)).
   $$
 
-  L’intervalle de confiance est ensuite construit autour de $\hat\theta$ avec des estimateurs de variance ou par bootstrap. En notation compacte, les méthodes asymptotiques utilisent une forme du type
+  The confidence interval is then built around $\hat\theta$ using either variance estimators or bootstrap. In compact notation, the asymptotic methods use a form of
 
   $$
   \hat\theta \pm z_{1-\alpha}\,\widehat{\mathrm{se}},
   $$
 
-  où $\alpha = (1-\text{level})/2$ et $z_{1-\alpha}$ est le quantile normal. Le code sépare aussi les contributions de variance via
+  where $\alpha = (1-\text{level})/2$ and $z_{1-\alpha}$ is the standard normal quantile. The code also separates the variance contributions via
 
   $$
   \hat\sigma^2 = \lambda_{1,3}\,\hat\eta + \lambda_2\,\hat\varepsilon,
   $$
 
-  avec $\hat\varepsilon = n^{-1}\sum_i (\hat\theta - Q_Y(F_Z(X_i)))^2$, $\lambda_{1,3} = N(n_1+n_3)/(n_1n_3)$, $\lambda_2 = N/n_2$ et $N = \min(n_1,n_2,n_3)$.
+  with $\hat\varepsilon = n^{-1}\sum_i (\hat\theta - Q_Y(F_Z(X_i)))^2$, $\lambda_{1,3} = N(n_1+n_3)/(n_1n_3)$, $\lambda_2 = N/n_2$, and $N = \min(n_1,n_2,n_3)$.
 
-  | Méthode | Ce qu’elle fait | Différence principale |
+  | Method | What it does | Main difference |
   |---|---|---|
-  | "no-split" | Estime la partie non paramétrique de variance sur l’échantillon complet, avec un lissage piloté par `h`. | C’est la méthode asymptotique la plus directe et la plus efficace en termes d’utilisation des données. |
-  | "split" | Coupe les échantillons en deux moitiés, ré-estime les composantes de densité sur chaque moitié, puis forme l’intervalle avec une variance de sample splitting. | Elle réduit le biais de réutilisation des données, au prix d’une perte d’information et d’une variance souvent plus grande. |
-  | "kde" | Approxime la densité à l’aide d’un noyau d’Epanechnikov appliqué aux scores $Q_Y(F_Z(X_i))$. | Elle remplace l’estimation par comptage local par une estimation de densité au noyau, utile comme alternative lissée. |
-  | "bse" | Rééchantillonne les triplets $(Y,X,Z)$, calcule $\hat\theta^*$ à chaque réplication, puis prend l’écart-type bootstrap comme erreur-type. | L’intervalle est centré sur $\hat\theta$ et hérite de la dispersion empirique bootstrap. |
-  | "bpc" | Rééchantillonne comme "bse", mais utilise directement les quantiles empiriques de $\hat\theta^*$ pour construire l’intervalle. | L’intervalle n’est pas forcé d’être symétrique autour de $\hat\theta$ et suit mieux l’asymétrie finie-échantillon. |
+  | "no-split" | Estimates the nonparametric variance component on the full sample, with smoothing controlled by `h`. | It is the most direct asymptotic method and uses all observations at once. |
+  | "split" | Splits the samples into two halves, re-estimates the density components on each half, and then builds the interval with a sample-splitting variance. | It reduces data reuse bias, but typically loses information and increases variance. |
+  | "kde" | Approximates the density using an Epanechnikov kernel applied to the scores $Q_Y(F_Z(X_i))$. | It replaces local counting with kernel density smoothing and provides a smooth alternative. |
+  | "bse" | Resamples the triplets $(Y,X,Z)$, computes $\hat\theta^*$ at each replication, and uses the bootstrap standard deviation as the standard error. | The interval is centered on $\hat\theta$ and reflects the empirical bootstrap dispersion. |
+  | "bpc" | Resamples as in "bse", but uses the empirical quantiles of $\hat\theta^*$ directly to build the interval. | The interval is not forced to be symmetric around $\hat\theta$ and better reflects finite-sample asymmetry. |
 
-  En pratique, `cic()` peut recevoir une seule méthode ou plusieurs méthodes à la fois, et renvoie les intervalles dans l’ordre demandé. Pour lire rapidement les résultats: `no-split`, `split` et `kde` sont les trois variantes asymptotiques principales, tandis que `bse` et `bpc` servent surtout de contrepoints bootstrap pour comparer la robustesse en petit échantillon.
+  In practice, `cic()` can receive one method or several methods at once, and it returns the intervals in the requested order. As a quick reading guide: `no-split`, `split`, and `kde` are the three main asymptotic variants, while `bse` and `bpc` are bootstrap comparisons that help assess robustness in small samples.
 
   ## Package Contents
 
