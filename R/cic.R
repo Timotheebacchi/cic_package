@@ -16,7 +16,7 @@
 #'     \item{"bpc"}{Bootstrap percentile method}
 #'   }
 #' @param B Integer: Number of bootstrap replications (default: 200). Only used for "bse" and "bpc".
-#' @param h Numeric: Bandwidth parameter for no-split method (default: NULL = auto)
+#' @param h Numeric: Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default is 1/log(n_2).
 #' @param level Numeric: Confidence level for intervals (default: 0.95)
 #' @return An S3 object of class 'cic' with elements:
 #'   \item{theta_hat}{Estimated CiC parameter}
@@ -69,7 +69,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
   eps_hat        <- mean((theta_hat - qcdf_transform)^2)
 
   # ── Bandwidth ─────────────────────────────────────────────────────────────────
-  if (is.null(h)) h <- .default_bandwidth(Y)
+  if (is.null(h)) h <- .default_bandwidth(n2)
 
   # ── Variance estimation ───────────────────────────────────────────────────────
   ci_rows <- list()
@@ -78,27 +78,15 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
   lbda2    <- N / n2
 
   if ("no-split" %in% method) {
-    # Use the user-provided or default Silverman bandwidth in the no-split
-    # adaptive density estimator. This makes fit$h the actual smoothing
-    # parameter used by the full-sample variance estimator.
-    eps_bw <- h
-
-    # No-split: use full samples, not divided into halves
+    # No-split: use the full sample and a single bandwidth multiplier in the
+    # local density estimator.
     Ysortdiff <- diff(sort(Y))
     FYhat     <- seq_len(n1 - 1) / n1
     
     est_full   <- .make_density_estimator(sort(Uhat), FYhat)
-    fUhat      <- est_full$estimate(eps_bw, pointwise = 1)
-    fUhat_unif <- est_full$estimate(eps_bw, pointwise = 0)
-    fUhat_t2   <- est_full$estimate(2 * eps_bw, pointwise = 1)
-    fUhat_d2   <- est_full$estimate(eps_bw / 2, pointwise = 1)
+    fUhat      <- est_full$estimate(h, pointwise = 1)
 
-    eta_hat    <- .fast_eta(Ysortdiff, fUhat,      Ysortdiff, fUhat,      FYhat)
-    eta_unif   <- .fast_eta(Ysortdiff, fUhat_unif, Ysortdiff, fUhat_unif, FYhat)
-    eta_t2     <- .fast_eta(Ysortdiff, fUhat_t2,   Ysortdiff, fUhat_t2,   FYhat)
-    eta_d2     <- .fast_eta(Ysortdiff, fUhat_d2,   Ysortdiff, fUhat_d2,   FYhat)
-
-    eta_nosplit <- (eta_hat + eta_unif + eta_t2 + eta_d2) / 4
+    eta_nosplit <- .fast_eta(Ysortdiff, fUhat, Ysortdiff, fUhat, FYhat)
     sigma_sq    <- lbda1_3 * eta_nosplit + lbda2 * eps_hat
     se          <- sqrt(sigma_sq / N)
 
@@ -108,7 +96,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
       upper  = theta_hat + z_a * se,
       length = 2 * z_a * se
     )
-    rm(Ysortdiff, FYhat, fUhat, fUhat_unif, fUhat_t2, fUhat_d2, est_full)
+    rm(Ysortdiff, FYhat, fUhat, est_full)
   }
 
   if ("split" %in% method) {
@@ -128,8 +116,8 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
 
     est1   <- .make_density_estimator(sort(Uhat1), FYhat_split)
     est2   <- .make_density_estimator(sort(Uhat2), FYhat_split)
-    fUhat1 <- est1$estimate(1 / log(n2), pointwise = 1)
-    fUhat2 <- est2$estimate(1 / log(n2), pointwise = 1)
+    fUhat1 <- est1$estimate(h, pointwise = 1)
+    fUhat2 <- est2$estimate(h, pointwise = 1)
 
     eta_hat_split <- .fast_eta(Ysort1diff, fUhat1, Ysort2diff, fUhat2, FYhat_split)
     sigma_sq_split <- lbda1_3 * eta_hat_split + lbda2 * eps_hat
@@ -151,13 +139,9 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
     k        <- findInterval(grid - 1e-12, U_sort) + 1L
     ok       <- k <= n_kde
 
-    f_half <- f_y_hat_epnechikov(Y, qcdf_transform, h / 2)
     f_one  <- f_y_hat_epnechikov(Y, qcdf_transform, h)
-    f_two  <- f_y_hat_epnechikov(Y, qcdf_transform, h * 2)
 
-    eta_ai_d2 <- .compute_eta_from_f(f_half, Uhat, idx_sort, k, ok, n_kde)
     eta_ai    <- .compute_eta_from_f(f_one,  Uhat, idx_sort, k, ok, n_kde)
-    eta_ai_t2 <- .compute_eta_from_f(f_two,  Uhat, idx_sort, k, ok, n_kde)
 
     sigma_sq_kde <- 2 * eta_ai + eps_hat
     se_kde <- sqrt(max(sigma_sq_kde, 0) / N)

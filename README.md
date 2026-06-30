@@ -81,6 +81,14 @@
 
   In practice, `cic()` can receive one method or several methods at once, and it returns the intervals in the requested order. As a quick reading guide: `no-split`, `split`, and `kde` are the three main asymptotic variants, while `bse` and `bpc` are bootstrap comparisons that help assess robustness in small samples.
 
+  The density estimators use a single bandwidth multiplier `h` through the local rule
+
+  $$
+  h_{n_2,u} = h \, u(1-u),
+  $$
+
+  with default choice `h = 1/log(n_2)`. If you pass your own `h`, `check_cic_assumptions()` reports a bandwidth diagnostic and warns when the value looks too aggressive relative to the estimated tail and boundary conditions.
+
   ## Package Contents
 
   - `cic()` for estimation and confidence intervals

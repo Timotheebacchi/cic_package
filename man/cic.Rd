@@ -32,7 +32,7 @@ cic(
 
 \item{B}{Integer: Number of bootstrap replications (default: 200). Only used for "bse" and "bpc".}
 
-\item{h}{Numeric: Bandwidth parameter for no-split method (default: NULL = auto)}
+\item{h}{Numeric: Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default is 1/log(n_2).}
 
 \item{level}{Numeric: Confidence level for intervals (default: 0.95)}
 }

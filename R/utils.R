@@ -87,14 +87,11 @@
   sum(delta_V * Su * Sv) - term2
 }
 
-# Default plug-in bandwidth for the Epanechnikov KDE.
-# This is the automatic fallback used when the user does not supply h.
-# Can be overridden by the user via the h argument of cic().
-.default_bandwidth <- function(Y) {
-  n  <- length(Y)
-  sd_Y <- stats::sd(Y)
-  # Heuristic bandwidth based on the sample scale and sample size.
-  1.06 * sd_Y * n^(-1/5)
+# Default bandwidth multiplier for the local density estimators.
+# The local bandwidth used by the estimator is h_{n_2,u} = eps_n * u * (1-u).
+# The default multiplier follows the theoretical suggestion 1 / log(n_2).
+.default_bandwidth <- function(n2) {
+  1 / log(n2)
 }
 
 # Bootstrap core: resamples and recomputes point estimates
@@ -260,13 +257,17 @@
 #'     }
 #'   }
 #'   \item{messages}{Character vector: Warnings or success messages}
+#' @param h Optional bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u).
+#'   If supplied, the function checks that the value is positive and issues warnings
+#'   when it appears incompatible with the estimated tail/boundary conditions.
 #' @export
-check_cic_assumptions <- function(Y, X, Z) {
+check_cic_assumptions <- function(Y, X, Z, h = NULL) {
   # Input validation
   stopifnot(
     is.numeric(Y) && length(Y) >= 4,
     is.numeric(X) && length(X) >= 4,
-    is.numeric(Z) && length(Z) >= 4
+    is.numeric(Z) && length(Z) >= 4,
+    is.null(h) || (is.numeric(h) && length(h) == 1 && is.finite(h))
   )
   
   n1 <- length(Y)
@@ -276,6 +277,20 @@ check_cic_assumptions <- function(Y, X, Z) {
   
   messages <- character(0)
   metrics <- list()
+
+  if (!is.null(h)) {
+    metrics$bandwidth_multiplier <- h
+    if (h <= 0 || h > 1/2) {
+      messages <- c(
+        messages,
+        paste0(
+          "Warning [Bandwidth]: The supplied bandwidth multiplier should satisfy 0 < h <= 1/2. ",
+          sprintf("Current value: %.6f", h)
+        )
+      )
+      pass_all <- FALSE
+    }
+  }
   
   # ─ Assumption 1: Sampling Evaluation ──────────────────────────────────────
   
@@ -369,6 +384,25 @@ check_cic_assumptions <- function(Y, X, Z) {
   
   metrics$convergence_left <- convergence_left
   metrics$convergence_right <- convergence_right
+
+  if (!is.null(h)) {
+    threshold_left <- (log(N) / sqrt(N))^(0.5 - convergence_left)
+    threshold_right <- (log(N) / sqrt(N))^(0.5 - convergence_right)
+    metrics$bandwidth_threshold_left <- threshold_left
+    metrics$bandwidth_threshold_right <- threshold_right
+
+    if (h <= threshold_left || h <= threshold_right) {
+      messages <- c(
+        messages,
+        paste0(
+          "Warning [Bandwidth]: The supplied bandwidth multiplier may be too small ",
+          "relative to the estimated boundary/tail rates. ",
+          sprintf("(h=%.6f, left threshold=%.6f, right threshold=%.6f)", h, threshold_left, threshold_right)
+        )
+      )
+      pass_all <- FALSE
+    }
+  }
   
   pass_all <- TRUE
   

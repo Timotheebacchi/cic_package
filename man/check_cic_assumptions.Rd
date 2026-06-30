@@ -4,7 +4,7 @@
 \alias{check_cic_assumptions}
 \title{Check CiC Model Assumptions}
 \usage{
-check_cic_assumptions(Y, X, Z)
+check_cic_assumptions(Y, X, Z, h = NULL)
 }
 \arguments{
 \item{Y}{Numeric vector: Outcome variable}
@@ -12,6 +12,10 @@ check_cic_assumptions(Y, X, Z)
 \item{X}{Numeric vector: Treatment/endogenous variable}
 
 \item{Z}{Numeric vector: Instrument/exogenous variable}
+
+\item{h}{Optional bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u).
+If supplied, the function checks that the value is positive and issues warnings
+when it appears incompatible with the estimated tail/boundary conditions.}
 }
 \value{
 A list with elements:
