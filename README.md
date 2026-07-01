@@ -31,26 +31,28 @@
   d <- sim_dgp(2000)
 
   diag <- check_cic_assumptions(d$Y, d$X, d$Z)
-  diag$pass_all
+  print(diag$pass_all)
+  print(diag$messages)
 
   set.seed(42)
   d_fail <- sim_dgp(500)
   diag_fail <- check_cic_assumptions(d_fail$Y, d_fail$X, d_fail$Z)
-  diag_fail$pass_all
-  diag_fail$messages
+  print(diag_fail$pass_all)
+  print(diag_fail$messages)
 
   set.seed(42)
   d_panel <- sim_dgp(500, panel_data = TRUE)
   diag_panel <- check_cic_assumptions(d_panel$Y, d_panel$X, d_panel$Z, panel_data = TRUE)
-  diag_panel$pass_all
+  print(diag_panel$pass_all)
+  print(diag_panel$messages)
 
   fit_panel <- cic(d_panel$Y, d_panel$X, d_panel$Z, method = "no-split", panel_data = TRUE)
-  fit_panel$ci
+  print(fit_panel$ci)
 
   fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "split", "kde", "bse", "bpc"))
 
-  fit
-  fit$ci
+  print(fit)
+  print(fit$ci)
   summary(fit)
   ```
 
