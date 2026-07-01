@@ -1,2 +1,9 @@
 ^\.github$
 ^test_readme\.R$
+^\.git($|/)
+^\.gitignore$
+^\.DS_Store$
+^\.\.Rcheck($|/)
+^cic\.Rcheck($|/)
+^cic_.*\.tar\.gz$
+^src/.*\.(o|so|dll)$
