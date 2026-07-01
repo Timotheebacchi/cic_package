@@ -4,7 +4,7 @@
 \alias{sim_dgp}
 \title{Simulate Data from the CiC Simulation DGP}
 \usage{
-sim_dgp(n, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = NULL)
+sim_dgp(n, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = NULL, panel_data = FALSE)
 }
 \arguments{
 \item{n}{Sample size}
@@ -18,6 +18,8 @@ sim_dgp(n, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = NULL)
 \item{d2}{Right tail parameter (default: 0.05)}
 
 \item{seed}{Random seed (default: NULL)}
+
+\item{panel_data}{Logical: if TRUE, generate a paired (Y, Z) sample for the panel-data workflow.}
 }
 \value{
 A list with elements:
@@ -37,4 +39,9 @@ head(d)
 set.seed(42)
 d_fail <- sim_dgp(500)
 check_cic_assumptions(d_fail$Y, d_fail$X, d_fail$Z)$pass_all
+
+set.seed(42)
+d_panel <- sim_dgp(500, panel_data = TRUE)
+diag_panel <- check_cic_assumptions(d_panel$Y, d_panel$X, d_panel$Z, panel_data = TRUE)
+diag_panel$pass_all
 }

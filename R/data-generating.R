@@ -41,6 +41,7 @@ theta_true <- function(b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05) {
 #' @param d1 Left tail parameter (default: 0)
 #' @param d2 Right tail parameter (default: 0.05)
 #' @param seed Random seed (default: NULL)
+#' @param panel_data Logical: if TRUE, generate a paired (Y, Z) sample for the panel-data workflow.
 #' @return A list with elements:
 #' \item{Y}{Outcome variable}
 #' \item{X}{Treatment/endogenous variable}
@@ -50,15 +51,24 @@ theta_true <- function(b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05) {
 #' set.seed(42)
 #' d <- sim_dgp(500)
 #' head(d)
+#'
+#' set.seed(42)
+#' d_panel <- sim_dgp(500, panel_data = TRUE)
+#' diag_panel <- check_cic_assumptions(d_panel$Y, d_panel$X, d_panel$Z, panel_data = TRUE)
+#' diag_panel$pass_all
 #' 
 #' set.seed(42)
 #' d_fail <- sim_dgp(500)
 #' check_cic_assumptions(d_fail$Y, d_fail$X, d_fail$Z)$pass_all
-sim_dgp <- function(n, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = NULL) {
+sim_dgp <- function(n, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = NULL, panel_data = FALSE) {
   if (!is.null(seed)) set.seed(seed)
   W <- runif(n)
   Y <- qY_dgp(W, d1, d2)
-  Z <- rnorm(n)
+  if (panel_data) {
+    Z <- qnorm(W)
+  } else {
+    Z <- rnorm(n)
+  }
   V <- rbeta(n, 1 - b1, 1 - b2)
   X <- qnorm(V)
   list(Y = Y, X = X, Z = Z)

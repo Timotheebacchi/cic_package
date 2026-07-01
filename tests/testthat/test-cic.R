@@ -38,7 +38,7 @@ test_that("cic() retourne un objet de classe 'cic'", {
 test_that("cic() retourne les bons champs", {
   d <- sim_dgp(200, seed = 2)
   fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "bse", "bpc"), B = 200)
-  expect_named(fit, c("theta_hat", "ci", "level", "n", "method", "h"))
+  expect_named(fit, c("theta_hat", "ci", "level", "n", "method", "panel_data", "h"))
   expect_equal(nrow(fit$ci), 3)
   expect_equal(fit$ci$method, c("no-split", "bse", "bpc"))
 })
@@ -274,4 +274,24 @@ test_that("check_cic_assumptions génère des messages clairs", {
   expect_true(length(diag$messages) >= 1)
   # Chaque message doit être non-vide
   expect_true(all(nchar(diag$messages) > 0))
+})
+
+test_that("panel_data works in cic() and check_cic_assumptions()", {
+  d <- cic.newassumptions.newvarianceestimator::sim_dgp(500, seed = 30, panel_data = TRUE)
+  diag <- check_cic_assumptions(d$Y, d$X, d$Z, panel_data = TRUE)
+  fit <- cic(d$Y, d$X, d$Z, method = "no-split", panel_data = TRUE)
+
+  expect_true(diag$pass_all)
+  expect_true(isTRUE(diag$metrics$panel_data))
+  expect_true(isTRUE(fit$panel_data))
+  expect_s3_class(fit, "cic")
+  expect_true(all(is.finite(fit$ci$length)))
+})
+
+test_that("panel_data rejects non-no-split methods", {
+  d <- cic.newassumptions.newvarianceestimator::sim_dgp(200, seed = 31, panel_data = TRUE)
+  expect_error(
+    cic(d$Y, d$X, d$Z, method = c("no-split", "bse"), panel_data = TRUE),
+    regexp = "panel_data = TRUE is currently supported only for method = 'no-split'"
+  )
 })

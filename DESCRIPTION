@@ -12,7 +12,8 @@ Description: Implements the Changes-in-Changes estimator and asymptotic
     controlled bandwidth multiplier h through h_{n_2,u} = h u(1-u), with default
     choice 1/log(n_2). The diagnostic tool check_cic_assumptions() validates
     empirical data against theoretical assumptions (sampling balance, continuity,
-    tail behavior, convergence rates, and optional bandwidth compatibility).
+    tail behavior, convergence rates, optional bandwidth compatibility, and an
+    optional panel-data workflow based on paired (Y, Z) samples).
     The core computations are written in C++ via Rcpp for performance. Features
     robust input validation, graceful error handling for missing compiled code,
     and pure R fallback implementations for maximum compatibility.

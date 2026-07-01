@@ -258,6 +258,62 @@
   )
 }
 
+.panel_no_split_estimator <- function(Y, X, Z, h) {
+  n1 <- length(Y)
+  n2 <- length(X)
+
+  if (n1 != length(Z)) {
+    stop("panel_data = TRUE requires length(Y) to equal length(Z).")
+  }
+
+  q <- floor(n1 / 4)
+  r <- floor(n2 / 2)
+  if (q < 2 || r < 2) {
+    stop("panel_data = TRUE requires at least 8 paired observations and 4 X observations.")
+  }
+
+  z_1 <- seq_len(q)
+  z_2 <- seq.int(q + 1L, 2L * q)
+  y_1 <- seq.int(2L * q + 1L, 3L * q)
+  y_2 <- seq.int(3L * q + 1L, 4L * q)
+  x_1 <- seq_len(r)
+  x_2 <- seq.int(r + 1L, 2L * r)
+
+  FZ1 <- stats::ecdf(Z[z_1])
+  FZ2 <- stats::ecdf(Z[z_2])
+  FY1_q <- .prepare_left_quantile(Y[y_1])
+  FY2_q <- .prepare_left_quantile(Y[y_2])
+
+  theta_1 <- mean(FY1_q(FZ2(X[x_1])))
+  theta_2 <- mean(FY2_q(FZ1(X[x_2])))
+  theta_hat <- mean(c(theta_1, theta_2))
+
+  U_1 <- FZ1(X[x_1])
+  U_2 <- FZ2(X[x_2])
+  FYhat <- seq_len(q - 1L) / q
+
+  est_1 <- .make_density_estimator(sort(U_1), FYhat)
+  est_2 <- .make_density_estimator(sort(U_2), FYhat)
+  fU_1 <- est_1$estimate(h, pointwise = 1)
+  fU_2 <- est_2$estimate(h, pointwise = 1)
+
+  eta_panel <- .fast_eta(diff(sort(Y[y_1])), fU_1, diff(sort(Y[y_2])), fU_2, FYhat)
+
+  eps_1 <- theta_hat - FY1_q(FZ2(X))
+  eps_2 <- theta_hat - FY2_q(FZ1(X))
+  eps_panel <- mean((eps_1^2 + eps_2^2) / 2)
+
+  sigma_sq <- (2 * q / n1) * eta_panel + (q / n2) * eps_panel
+
+  list(
+    theta_hat = theta_hat,
+    sigma_sq = sigma_sq,
+    se = sqrt(max(sigma_sq, 0) / min(n1, n2)),
+    q = q,
+    r = r
+  )
+}
+
 .screen_density_envelope <- function(U, b1, b2, h = NULL) {
   U <- na.omit(as.numeric(U))
   n <- length(U)
@@ -323,8 +379,10 @@
 #' @param h Optional bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u).
 #'   If supplied, the function checks that the value is positive and issues warnings
 #'   when it appears incompatible with the estimated tail/boundary conditions.
+#' @param panel_data Logical: if TRUE, use the panel-data assumption checks based on
+#'   the paired (Y, Z) sample and the two-sample variance setup with N = min(n1, n2).
 #' @export
-check_cic_assumptions <- function(Y, X, Z, h = NULL) {
+check_cic_assumptions <- function(Y, X, Z, h = NULL, panel_data = FALSE) {
   # Input validation
   stopifnot(
     is.numeric(Y) && length(Y) >= 4,
@@ -336,11 +394,23 @@ check_cic_assumptions <- function(Y, X, Z, h = NULL) {
   n1 <- length(Y)
   n2 <- length(X)
   n3 <- length(Z)
-  N <- n1 + n2 + n3
+  N <- if (panel_data) min(n1, n2) else n1 + n2 + n3
   
   messages <- character(0)
   metrics <- list()
   pass_all <- TRUE
+  metrics$panel_data <- isTRUE(panel_data)
+
+  if (panel_data && n1 != n3) {
+    messages <- c(
+      messages,
+      paste0(
+        "Warning [Panel data]: length(Y) must equal length(Z) in panel mode. ",
+        sprintf("Current lengths: Y=%d, Z=%d", n1, n3)
+      )
+    )
+    pass_all <- FALSE
+  }
 
   if (!is.null(h)) {
     metrics$bandwidth_multiplier <- h
@@ -359,21 +429,31 @@ check_cic_assumptions <- function(Y, X, Z, h = NULL) {
   # ─ Assumption 1: Sampling Evaluation ──────────────────────────────────────
   
   # Ratio test
-  lambda1 <- n1 / N
-  lambda2 <- n2 / N
-  lambda3 <- n3 / N
+  if (panel_data) {
+    lambda1 <- N / n1
+    lambda2 <- N / n2
+    lambda3 <- NA_real_
+  } else {
+    lambda1 <- n1 / N
+    lambda2 <- n2 / N
+    lambda3 <- n3 / N
+  }
   
   metrics$lambda1 <- lambda1
   metrics$lambda2 <- lambda2
   metrics$lambda3 <- lambda3
   
-  if (any(c(lambda1, lambda2, lambda3) < 0.05)) {
+  if (any(c(lambda1, lambda2) < 0.05) || (!panel_data && lambda3 < 0.05)) {
     messages <- c(
       messages,
       paste0(
         "Warning [Assumption 1(iii)]: Sample size ratios are highly imbalanced. ",
         "Asymptotic convergence may be unstable. ",
-        sprintf("(\u03bb\u2081=%.3f, \u03bb\u2082=%.3f, \u03bb\u2083=%.3f)", lambda1, lambda2, lambda3)
+        if (panel_data) {
+          sprintf("(\u03bb\u2081=%.3f, \u03bb\u2082=%.3f)", lambda1, lambda2)
+        } else {
+          sprintf("(\u03bb\u2081=%.3f, \u03bb\u2082=%.3f, \u03bb\u2083=%.3f)", lambda1, lambda2, lambda3)
+        }
       )
     )
   }
@@ -433,6 +513,7 @@ check_cic_assumptions <- function(Y, X, Z, h = NULL) {
   
   metrics$d1_left_tail <- d1
   metrics$d2_right_tail <- d2
+  metrics$N_used <- N
 
   quantile_screen <- .screen_quantile_envelope(Y, d1, d2)
   metrics$quantile_screen_grid <- quantile_screen$grid

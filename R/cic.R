@@ -18,6 +18,7 @@
 #' @param B Integer: Number of bootstrap replications (default: 200). Only used for "bse" and "bpc".
 #' @param h Numeric: Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default is 1/log(n_2).
 #' @param level Numeric: Confidence level for intervals (default: 0.95)
+#' @param panel_data Logical: if TRUE, use the panel-data estimator based on a paired (Y, Z) sample.
 #' @return An S3 object of class 'cic' with elements:
 #'   \item{theta_hat}{Estimated CiC parameter}
 #'   \item{ci}{Data frame with confidence intervals (columns: lower, upper, length, method)}
@@ -25,6 +26,7 @@
 #'   \item{method}{Estimation method(s) used}
 #'   \item{h}{Bandwidth used for the nonparametric density estimators}
 #'   \item{level}{Confidence level}
+#'   \item{panel_data}{Logical: TRUE when the panel-data estimator is used}
 #' @examples
 #' set.seed(42)
 #' d <- sim_dgp(500)
@@ -34,7 +36,7 @@
 #' @references Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026).
 #'   Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript.
 #' @export
-cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B = 200, h = NULL, level = 0.95) {
+cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B = 200, h = NULL, level = 0.95, panel_data = FALSE) {
 
   # ── Input checks ─────────────────────────────────────────────────────────────
   method <- match.arg(method, several.ok = TRUE)
@@ -44,6 +46,9 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
     is.null(h) || (is.numeric(h) && length(h) == 1 && h > 0),
     is.numeric(level), level > 0, level < 1
   )
+  if (isTRUE(panel_data) && any(method != "no-split")) {
+    stop("panel_data = TRUE is currently supported only for method = 'no-split'.")
+  }
   if (any(c("bse", "bpc") %in% method)) {
     # Sanitize B: check for NA and NULL before conversion
     if (is.null(B) || (is.na(B))) {
@@ -68,6 +73,12 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
   theta_hat      <- mean(qcdf_transform)
   eps_hat        <- mean((theta_hat - qcdf_transform)^2)
 
+  if (isTRUE(panel_data)) {
+    panel_fit <- .panel_no_split_estimator(Y, X, Z, h = if (is.null(h)) .default_bandwidth(length(X)) else h)
+    theta_hat <- panel_fit$theta_hat
+    eps_hat <- mean((panel_fit$theta_hat - qcdf_transform)^2)
+  }
+
   # ── Bandwidth ─────────────────────────────────────────────────────────────────
   if (is.null(h)) h <- .default_bandwidth(n2)
 
@@ -78,17 +89,24 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
   lbda2    <- N / n2
 
   if ("no-split" %in% method) {
-    # No-split: use the full sample and a single bandwidth multiplier in the
-    # local density estimator.
-    Ysortdiff <- diff(sort(Y))
-    FYhat     <- seq_len(n1 - 1) / n1
-    
-    est_full   <- .make_density_estimator(sort(Uhat), FYhat)
-    fUhat      <- est_full$estimate(h, pointwise = 1)
+    if (isTRUE(panel_data)) {
+      sigma_sq <- panel_fit$sigma_sq
+      se <- panel_fit$se
+    } else {
+      # No-split: use the full sample and a single bandwidth multiplier in the
+      # local density estimator.
+      Ysortdiff <- diff(sort(Y))
+      FYhat     <- seq_len(n1 - 1) / n1
+      
+      est_full   <- .make_density_estimator(sort(Uhat), FYhat)
+      fUhat      <- est_full$estimate(h, pointwise = 1)
 
-    eta_nosplit <- .fast_eta(Ysortdiff, fUhat, Ysortdiff, fUhat, FYhat)
-    sigma_sq    <- lbda1_3 * eta_nosplit + lbda2 * eps_hat
-    se          <- sqrt(sigma_sq / N)
+      eta_nosplit <- .fast_eta(Ysortdiff, fUhat, Ysortdiff, fUhat, FYhat)
+      sigma_sq    <- lbda1_3 * eta_nosplit + lbda2 * eps_hat
+      se          <- sqrt(sigma_sq / N)
+
+      rm(Ysortdiff, FYhat, fUhat, est_full)
+    }
 
     ci_rows[["no-split"]] <- data.frame(
       method = "no-split",
@@ -96,7 +114,6 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
       upper  = theta_hat + z_a * se,
       length = 2 * z_a * se
     )
-    rm(Ysortdiff, FYhat, fUhat, est_full)
   }
 
   if ("split" %in% method) {
@@ -200,7 +217,8 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
       ci        = ci,
       level     = level,
       n         = c(n1 = n1, n2 = n2, n3 = n3),
-        method    = method,
+      method    = method,
+      panel_data = isTRUE(panel_data),
       h         = if (any(c("no-split", "kde") %in% method)) h else NA_real_
     ),
     class = "cic"

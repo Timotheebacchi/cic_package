@@ -4,7 +4,7 @@
 \alias{check_cic_assumptions}
 \title{Check CiC Model Assumptions}
 \usage{
-check_cic_assumptions(Y, X, Z, h = NULL)
+check_cic_assumptions(Y, X, Z, h = NULL, panel_data = FALSE)
 }
 \arguments{
 \item{Y}{Numeric vector: Outcome variable}
@@ -16,6 +16,9 @@ check_cic_assumptions(Y, X, Z, h = NULL)
 \item{h}{Optional bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u).
 If supplied, the function checks that the value is positive and issues warnings
 when it appears incompatible with the estimated tail/boundary conditions.}
+
+\\item{panel_data}{Logical: if TRUE, use the panel-data assumption checks based on
+the paired (Y, Z) sample and the two-sample variance setup with N = min(n1, n2).}
 }
 \value{
 A list with elements:
@@ -25,7 +28,7 @@ A list with elements:
 \item{lambda1, lambda2, lambda3}{Sample size ratios}
 \item{d1_left_tail, d2_right_tail}{Tail indices}
 \item{b1_left_boundary, b2_right_boundary}{Boundary density estimates}
-\\item{quantile_screen_\emph{, density_screen_}}{Pointwise envelope-screen summaries}
+\\item{quantile_screen_*, density_screen_*}{Pointwise envelope-screen summaries}
 \item{autocorrelation_p}{Ljung-Box test p-value}
 \item{uniqueness_ratio}{Ratio of unique values}
 }

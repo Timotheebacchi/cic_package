@@ -11,7 +11,8 @@ cic(
   method = c("no-split", "split", "kde", "bse", "bpc"),
   B = 200,
   h = NULL,
-  level = 0.95
+  level = 0.95,
+  panel_data = FALSE
 )
 }
 \arguments{
@@ -35,6 +36,7 @@ cic(
 \item{h}{Numeric: Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default is 1/log(n_2).}
 
 \item{level}{Numeric: Confidence level for intervals (default: 0.95)}
+\item{panel_data}{Logical: if TRUE, use the panel-data estimator based on a paired (Y, Z) sample.}
 }
 \value{
 An S3 object of class 'cic' with elements:
@@ -44,6 +46,7 @@ An S3 object of class 'cic' with elements:
 \item{method}{Estimation method(s) used}
 \item{h}{Bandwidth used for the nonparametric density estimators}
 \item{level}{Confidence level}
+\\item{panel_data}{Logical: TRUE when the panel-data estimator is used}
 }
 \description{
 Computes the CiC estimator for nonlinear difference-in-differences models
