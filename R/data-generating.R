@@ -50,6 +50,10 @@ theta_true <- function(b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05) {
 #' set.seed(42)
 #' d <- sim_dgp(500)
 #' head(d)
+#' 
+#' set.seed(42)
+#' d_fail <- sim_dgp(500)
+#' check_cic_assumptions(d_fail$Y, d_fail$X, d_fail$Z)$pass_all
 sim_dgp <- function(n, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = NULL) {
   if (!is.null(seed)) set.seed(seed)
   W <- runif(n)

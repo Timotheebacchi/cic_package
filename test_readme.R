@@ -1,7 +1,7 @@
 library(cic)
 
 set.seed(42)
-d <- sim_dgp(500)
+d <- sim_dgp(2000)
 
 diag <- check_cic_assumptions(d$Y, d$X, d$Z)
 diag$pass_all

@@ -33,4 +33,8 @@ used in the package examples and Monte Carlo checks.
 set.seed(42)
 d <- sim_dgp(500)
 head(d)
+
+set.seed(42)
+d_fail <- sim_dgp(500)
+check_cic_assumptions(d_fail$Y, d_fail$X, d_fail$Z)$pass_all
 }

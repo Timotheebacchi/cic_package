@@ -240,6 +240,68 @@
   list(b1 = b1_est, b2 = b2_est)
 }
 
+.screen_quantile_envelope <- function(Y, d1, d2, grid = seq(0.05, 0.95, length.out = 19)) {
+  qhat <- .prepare_left_quantile(Y)(grid)
+  envelope <- grid^(-d1) * (1 - grid)^(-d2)
+  ratio <- abs(qhat) / pmax(envelope, .Machine$double.eps)
+  reference <- stats::median(ratio[is.finite(ratio)])
+  if (!is.finite(reference) || reference <= 0) reference <- 1
+
+  list(
+    grid = grid,
+    qhat = qhat,
+    envelope = envelope,
+    ratio = ratio,
+    reference = reference,
+    max_to_median = max(ratio, na.rm = TRUE) / reference,
+    exceed_rate = mean(ratio > 2 * reference, na.rm = TRUE)
+  )
+}
+
+.screen_density_envelope <- function(U, b1, b2, h = NULL) {
+  U <- na.omit(as.numeric(U))
+  n <- length(U)
+  if (n < 4) {
+    return(list(
+      grid = numeric(0),
+      fhat = numeric(0),
+      envelope = numeric(0),
+      ratio = numeric(0),
+      reference = NA_real_,
+      max_to_median = NA_real_,
+      exceed_rate = NA_real_
+    ))
+  }
+
+  U_sorted <- sort(U, method = "radix")
+  FYhat <- seq_len(n - 1L) / n
+  h_diag <- h
+  if (is.null(h_diag) || !is.finite(h_diag) || h_diag <= 0) {
+    h_diag <- .default_bandwidth(n)
+  }
+
+  fhat <- tryCatch({
+    .make_density_estimator(U_sorted, FYhat)$estimate(h_diag, pointwise = 1)
+  }, error = function(e) {
+    stats::density(U_sorted, from = 0, to = 1, n = length(FYhat), cut = 0)$y
+  })
+
+  envelope <- FYhat^(-b1) * (1 - FYhat)^(-b2)
+  ratio <- fhat / pmax(envelope, .Machine$double.eps)
+  reference <- stats::median(ratio[is.finite(ratio)])
+  if (!is.finite(reference) || reference <= 0) reference <- 1
+
+  list(
+    grid = FYhat,
+    fhat = fhat,
+    envelope = envelope,
+    ratio = ratio,
+    reference = reference,
+    max_to_median = max(ratio, na.rm = TRUE) / reference,
+    exceed_rate = mean(ratio > 2 * reference, na.rm = TRUE)
+  )
+}
+
 #' @title Check CiC Model Assumptions
 #' @description Validates that data satisfy the theoretical requirements for the CiC estimator.
 #' @param Y Numeric vector: Outcome variable
@@ -252,6 +314,7 @@
 #'       \item{lambda1, lambda2, lambda3}{Sample size ratios}
 #'       \item{d1_left_tail, d2_right_tail}{Tail indices}
 #'       \item{b1_left_boundary, b2_right_boundary}{Boundary density estimates}
+#'       \\item{quantile_screen_*, density_screen_*}{Pointwise envelope-screen summaries}
 #'       \item{autocorrelation_p}{Ljung-Box test p-value}
 #'       \item{uniqueness_ratio}{Ratio of unique values}
 #'     }
@@ -277,6 +340,7 @@ check_cic_assumptions <- function(Y, X, Z, h = NULL) {
   
   messages <- character(0)
   metrics <- list()
+  pass_all <- TRUE
 
   if (!is.null(h)) {
     metrics$bandwidth_multiplier <- h
@@ -369,6 +433,29 @@ check_cic_assumptions <- function(Y, X, Z, h = NULL) {
   
   metrics$d1_left_tail <- d1
   metrics$d2_right_tail <- d2
+
+  quantile_screen <- .screen_quantile_envelope(Y, d1, d2)
+  metrics$quantile_screen_grid <- quantile_screen$grid
+  metrics$quantile_screen_ratio <- quantile_screen$ratio
+  metrics$quantile_screen_reference <- quantile_screen$reference
+  metrics$quantile_screen_max_to_median <- quantile_screen$max_to_median
+  metrics$quantile_screen_exceed_rate <- quantile_screen$exceed_rate
+
+    if (is.finite(quantile_screen$max_to_median) &&
+      (quantile_screen$max_to_median > 5 || quantile_screen$exceed_rate > 0.30)) {
+    messages <- c(
+      messages,
+      paste0(
+        "Warning [Assumption 2(ii)]: The empirical quantile function is not ",
+        "well approximated by the screened envelope |F_Y^{-1}(t)| <= C_Y t^{-d1}(1-t)^{-d2} ",
+        "on the interior grid. This is a heuristic check, so treat it as a warning. ",
+        sprintf(
+          "(max/reference=%.2f, exceed rate=%.2f)",
+          quantile_screen$max_to_median, quantile_screen$exceed_rate
+        )
+      )
+    )
+  }
   
   # Step C: Estimate boundary density parameters
   boundary_est <- .estimate_boundary_density(Uhat)
@@ -377,6 +464,29 @@ check_cic_assumptions <- function(Y, X, Z, h = NULL) {
   
   metrics$b1_left_boundary <- b1
   metrics$b2_right_boundary <- b2
+
+  density_screen <- .screen_density_envelope(Uhat, b1, b2, h = h)
+  metrics$density_screen_grid <- density_screen$grid
+  metrics$density_screen_ratio <- density_screen$ratio
+  metrics$density_screen_reference <- density_screen$reference
+  metrics$density_screen_max_to_median <- density_screen$max_to_median
+  metrics$density_screen_exceed_rate <- density_screen$exceed_rate
+
+    if (is.finite(density_screen$max_to_median) &&
+      (density_screen$max_to_median > 5 || density_screen$exceed_rate > 0.30)) {
+    messages <- c(
+      messages,
+      paste0(
+        "Warning [Assumption 2(iii)]: The estimated density of U = F_Z(X) is not ",
+        "well approximated by the screened envelope f_U(u) <= C_U u^{-b1}(1-u)^{-b2} ",
+        "on the interior grid. This is a heuristic check, so treat it as a warning. ",
+        sprintf(
+          "(max/reference=%.2f, exceed rate=%.2f)",
+          density_screen$max_to_median, density_screen$exceed_rate
+        )
+      )
+    )
+  }
   
   # Step D: Convergence check
   convergence_left <- b1 + d1
@@ -403,8 +513,6 @@ check_cic_assumptions <- function(Y, X, Z, h = NULL) {
       pass_all <- FALSE
     }
   }
-  
-  pass_all <- TRUE
   
   if (convergence_left >= 0.5 || convergence_right >= 0.5) {
     messages <- c(

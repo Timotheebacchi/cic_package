@@ -25,6 +25,7 @@ A list with elements:
 \item{lambda1, lambda2, lambda3}{Sample size ratios}
 \item{d1_left_tail, d2_right_tail}{Tail indices}
 \item{b1_left_boundary, b2_right_boundary}{Boundary density estimates}
+\\item{quantile_screen_\emph{, density_screen_}}{Pointwise envelope-screen summaries}
 \item{autocorrelation_p}{Ljung-Box test p-value}
 \item{uniqueness_ratio}{Ratio of unique values}
 }
