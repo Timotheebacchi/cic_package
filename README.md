@@ -1,6 +1,6 @@
   # cic.newassumptions.newvarianceestimator: Changes-in-Changes Estimator
 
-  `cic.newassumptions.newvarianceestimator` is an R package for the Changes-in-Changes estimator and asymptotic inference for empirical quantile-based estimators. It computes the plug-in estimate, provides several confidence interval methods, and includes a diagnostic helper to check whether the input data look compatible with the model assumptions.
+  `cic.newassumptions.newvarianceestimator` is an R package for the Changes-in-Changes estimator and asymptotic inference for empirical quantile-based estimators. It computes the plug-in estimate, provides several confidence interval methods. This package is based on the inference methods proposed in https://arxiv.org/abs/2607.00219
 
   ## Features
 
@@ -11,7 +11,6 @@
     - `"kde"`
     - `"bse"`
     - `"bpc"`
-  - Lightweight input validation warnings (type and length checks)
   - Optional `panel_data = TRUE` workflow for paired `(Y, Z)` samples
   - Rcpp-backed computation for the core routines, with a pure R fallback where available
   - Simulation helpers `sim_dgp()`, `qY_dgp()`, and `theta_true()`
@@ -39,15 +38,14 @@
 
   ## Validation and warnings
 
-  The package no longer includes an extensive diagnostic helper. Instead it
-  performs lightweight input validation and emits clear warnings for common
+  The package performs lightweight input validation and emits clear warnings for common
   issues (e.g., non-numeric inputs, mismatched lengths, or invalid bandwidth
   values). Use `sim_dgp()` and the estimation `cic()` for simulation and
   inference; inspect warnings to help debug input problems.
 
   ## Assumptions Reminder
 
-  The package is built for the CiC setup described in the manuscript. Before
+  The package is built for the CiC setup described in [the manuscript](https://arxiv.org/abs/2607.00219). Before
   interpreting the output, the input data should be checked against the main
   assumptions used by the estimator:
 
