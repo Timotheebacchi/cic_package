@@ -59,7 +59,7 @@ The `method` argument accepts one or several interval constructors.
 fit <- cic(
   d$Y, d$X, d$Z,
   method = c("no-split", "split", "kde", "bse", "bpc"),
-  B = 500
+  B = 1000
 )
 
 fit
@@ -99,16 +99,16 @@ summary(fit)
 The package provides a plot method to compare the confidence intervals visually.
 
 ```{r plot-fit, fig.width=7, fig.height=3.5}
-plot(fit)
+## plotting has been removed from the package; print the CI table instead
+print(fit$ci)
 ```
 
 ## Practical Notes
 
 For empirical work, the main workflow is:
 
-1. inspect the sample with `check_cic_assumptions()`,
-2. estimate with at least one asymptotic method,
-3. compare with a bootstrap method if you want a robustness check,
-4. report the chosen method and confidence level explicitly.
+1. estimate with at least one asymptotic method,
+2. compare with a bootstrap method if you want a robustness check,
+3. report the chosen method and confidence level explicitly.
 
 The vignette and README now follow the manuscript by Chhor, D'Haultfoeuille, L'Hour, and Mugnier rather than the older Athey-Imbens reference.

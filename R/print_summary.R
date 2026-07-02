@@ -11,7 +11,6 @@
 
   out <- data.frame(
     Method = ci$method,
-    Estimate = rep(object$theta_hat, nrow(ci)),
     Std.Error = se,
     t.value = stat,
     p.value = p_value,
@@ -21,7 +20,7 @@
     check.names = FALSE
   )
 
-  names(out)[3:8] <- c("Std. Error", "t value", "Pr(>|t|)", "Lower CI", "Upper CI", "Length")
+  names(out)[2:7] <- c("Std. Error", "t value", "Pr(>|t|)", "Lower CI", "Upper CI", "Length")
   out
 }
 
@@ -31,7 +30,6 @@
 print.cic <- function(x, digits = 4, ...) {
   cat("Changes-in-Changes Estimator\n")
   cat(rep("-", 44), "\n", sep = "")
-  cat(sprintf("Estimate (theta_hat) : %.4f\n", x$theta_hat))
   cat(sprintf("Confidence level     : %.0f%%\n", x$level * 100))
   cat(sprintf("Sample sizes         : n1 = %d, n2 = %d, n3 = %d\n",
               x$n["n1"], x$n["n2"], x$n["n3"]))
@@ -47,7 +45,7 @@ print.cic <- function(x, digits = 4, ...) {
                  kde = "KDE", bpc = "Bootstrap (pct.)",
                  bse = "Bootstrap (SE)")
   tab$Method <- label_map[tab$Method]
-
+  cat(sprintf("Estimate (theta_hat) : %.4f\n", x$theta_hat))
   print(tab, row.names = FALSE, right = FALSE)
   invisible(x)
 }
@@ -58,7 +56,7 @@ print.cic <- function(x, digits = 4, ...) {
 summary.cic <- function(object, digits = 4, ...) {
   cat("Changes-in-Changes - Summary\n")
   cat(rep("=", 44), "\n", sep = "")
-  cat(sprintf("Point estimate : %.4f\n\n", object$theta_hat))
+  
 
   cat("Sample sizes:\n")
   cat(sprintf("  Y sample (n1) : %d\n", object$n["n1"]))
@@ -72,7 +70,8 @@ summary.cic <- function(object, digits = 4, ...) {
                 object$h))
 
   cat(rep("-", 44), "\n", sep = "")
-  cat("Econometric output:\n\n")
+  cat(sprintf("Point estimate : %.4f\n\n", object$theta_hat))
+  cat("Inference table:\n\n")
 
   tab <- .cic_inference_table(object)
   numeric_cols <- vapply(tab, is.numeric, logical(1))
@@ -107,30 +106,3 @@ confint.cic <- function(object, parm = NULL, level = object$level, ...) {
   as.matrix(ci)
 }
 
-#' @export
-#' @importFrom graphics axis segments points abline
-plot.cic <- function(x, y = NULL, ..., col = c("black", "blue"), pch = 19, lwd = 2) {
-  ci <- x$ci
-  n <- nrow(ci)
-  y_pos <- seq_len(n)
-  x_min <- min(ci$lower, x$theta_hat)
-  x_max <- max(ci$upper, x$theta_hat)
-  x_range <- if (x_max > x_min) x_max - x_min else 1
-  x_lim <- c(x_min - 0.05 * x_range, x_max + 0.05 * x_range)
-
-  plot(
-    NA, NA,
-    xlim = x_lim,
-    ylim = c(0.5, n + 0.5),
-    yaxt = "n",
-    ylab = "",
-    xlab = "Estimate",
-    main = "CiC confidence intervals",
-    ...
-  )
-  axis(2, at = y_pos, labels = ci$method)
-  segments(ci$lower, y_pos, ci$upper, y_pos, lwd = lwd, col = col[1])
-  points(rep(x$theta_hat, n), y_pos, pch = pch, col = col[2])
-  abline(v = x$theta_hat, lty = 2, col = "gray70")
-  invisible(x)
-}

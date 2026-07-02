@@ -194,13 +194,6 @@ test_that("summary.cic montre une sortie familière aux économistes", {
   expect_true(any(grepl("Pr(>|t|)", out, fixed = TRUE)))
 })
 
-test_that("plot.cic dessine sans erreur", {
-  d <- sim_dgp(200, seed = 16)
-  fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "bpc"), B = 200)
-  pdf(file = tempfile(fileext = ".pdf"))
-  expect_silent(plot(fit))
-  dev.off()
-})
 
 # ── Tests : Input Sanitization (Code Audit) ──────────────────────────────────
 test_that("B = NA déclenche une erreur", {
