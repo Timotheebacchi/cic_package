@@ -26,13 +26,10 @@
   ```r
   library(cic.newassumptions.newvarianceestimator)
 
-  set.seed(42)
+  set.seed(2026) #To match the code of the manuscript
   d <- sim_dgp(2000)
-
+  
   fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "split", "kde", "bse", "bpc"))
-
-  print(fit)
-  print(fit$ci)
   summary(fit)
   ```
 
@@ -60,15 +57,18 @@
     conditions required by the asymptotic theory;
   - the smoothing bandwidth should be reasonable for the sample size.
 
-  The package no longer includes an extensive diagnostic helper. It provides
+  The package provides
   only lightweight validation warnings; inspect warnings produced by `cic()`
   when running your data.
+ Use `summary(fit)` to view
+  the estimation and inference table.
 
-  In practice, `cic()` can receive one method or several methods at once, and it
+  In practice, `cic()` can receive one method of inference or several methods at once, and it
   returns the intervals in the requested order. The asymptotic methods are
   `no-split`, `split`, and `kde`, while `bse` and `bpc` are bootstrap
   comparisons that help assess robustness in small samples.
 
+  
   ## Package Contents
 
   - `cic()` for estimation and confidence intervals

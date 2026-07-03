@@ -40,11 +40,11 @@ Simulates a dataset from the Data Generating Process (DGP)
 used in the package examples and Monte Carlo checks.
 }
 \examples{
-set.seed(42)
+set.seed(2026)
 d <- sim_dgp(500)
 head(d)
 
-set.seed(42)
+set.seed(2026)
 d_panel <- sim_dgp(500, panel_data = TRUE)
 # use sim_dgp() with panel_data = TRUE for paired samples
 }

@@ -24,31 +24,6 @@
   out
 }
 
-# ── print.cic ──────────────────────────────────────────────────────────────────
-
-#' @export
-print.cic <- function(x, digits = 4, ...) {
-  cat("Changes-in-Changes Estimator\n")
-  cat(rep("-", 44), "\n", sep = "")
-  cat(sprintf("Confidence level     : %.0f%%\n", x$level * 100))
-  cat(sprintf("Sample sizes         : n1 = %d, n2 = %d, n3 = %d\n",
-              x$n["n1"], x$n["n2"], x$n["n3"]))
-  if (!is.na(x$h))
-    cat(sprintf("Bandwidth (h)        : %.4f\n", x$h))
-  cat(rep("-", 44), "\n", sep = "")
-
-  tab <- .cic_inference_table(x)
-  numeric_cols <- vapply(tab, is.numeric, logical(1))
-  tab[numeric_cols] <- lapply(tab[numeric_cols], round, digits = digits)
-
-  label_map <- c(`no-split` = "No-split", split = "Split",
-                 kde = "KDE", bpc = "Bootstrap (pct.)",
-                 bse = "Bootstrap (SE)")
-  tab$Method <- label_map[tab$Method]
-  cat(sprintf("Estimate (theta_hat) : %.4f\n", x$theta_hat))
-  print(tab, row.names = FALSE, right = FALSE)
-  invisible(x)
-}
 
 # ── summary.cic ────────────────────────────────────────────────────────────────
 
@@ -66,8 +41,10 @@ summary.cic <- function(object, digits = 4, ...) {
   cat(sprintf("\nConfidence level : %.0f%%\n", object$level * 100))
 
   if (!is.na(object$h))
-    cat(sprintf("Bandwidth (h)    : %.4f  [automatic plug-in default]\n",
+    cat(sprintf("Bandwidth (h)    : %.4f  [1/log(n2) plug-in default]\n",
                 object$h))
+  else
+    cat("Bandwidth (h)    : NA  [not applicable for bootstrap methods]\n")
 
   cat(rep("-", 44), "\n", sep = "")
   cat(sprintf("Point estimate : %.4f\n\n", object$theta_hat))

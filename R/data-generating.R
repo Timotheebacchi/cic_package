@@ -48,11 +48,11 @@ theta_true <- function(b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05) {
 #' \item{Z}{Instrument/exogenous variable}
 #' @export
 #' @examples
-#' set.seed(42)
+#' set.seed(2026)
 #' d <- sim_dgp(500)
 #' head(d)
 #'
-#' set.seed(42)
+#' set.seed(2026)
 #' d_panel <- sim_dgp(500, panel_data = TRUE)
 #' # use sim_dgp() with panel_data = TRUE for paired samples
 sim_dgp <- function(n, b1 = 0, b2 = 0.05, d1 = 0, d2 = 0.05, seed = NULL, panel_data = FALSE) {
