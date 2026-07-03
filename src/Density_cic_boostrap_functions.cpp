@@ -7,19 +7,25 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector f_y_hat_epnechikov(NumericVector Y, NumericVector y, double h) {
-  int n = Y.size();
-  int m = y.size();
-  NumericVector res(m);
-  double inv_h = 1.0 / h;
+  int n = Y.size(), m = y.size();
+  NumericVector Ys = clone(Y).sort();
   double sqrt5 = std::sqrt(5.0);
+  double coef  = 3.0 / (4.0 * sqrt5);
+  double inv_h = 1.0 / h;
+  double win   = h * sqrt5;
+  NumericVector res(m);
+
+  const double* ys = Ys.begin();
+  const double* yend = Ys.end();
 
   for (int i = 0; i < m; i++) {
+    double yi = y[i];
+    const double* lo = std::lower_bound(ys, yend, yi - win);
+    const double* hi = std::upper_bound(lo, yend, yi + win);
     double s = 0.0;
-    for (int j = 0; j < n; j++) {
-      double u = (Y[j] - y[i]) * inv_h;
-      if (std::abs(u) < sqrt5) {
-        s += (1.0 - (u * u) / 5.0) * 3.0 / (4.0 * sqrt5);
-      }
+    for (const double* p = lo; p != hi; ++p) {
+      double u = (*p - yi) * inv_h;
+      s += (1.0 - (u * u) / 5.0) * coef;
     }
     res[i] = s * inv_h / n;
   }

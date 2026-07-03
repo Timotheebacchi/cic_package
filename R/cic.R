@@ -19,6 +19,7 @@
 #' @param h Numeric: Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default is 1/log(n_2).
 #' @param level Numeric: Confidence level for intervals (default: 0.95)
 #' @param panel_data Logical: if TRUE, use the panel-data estimator based on a paired (Y, Z) sample.
+#' @param timings Logical: if TRUE, print elapsed time after each major computation block.
 #' @return An S3 object of class 'cic' with elements:
 #'   \item{theta_hat}{Estimated CiC parameter}
 #'   \item{ci}{Data frame with confidence intervals (columns: lower, upper, length, method)}
@@ -36,7 +37,7 @@
 #' @references Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026).
 #'   Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript.
 #' @export
-cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B = 200, h = NULL, level = 0.95, panel_data = FALSE) {
+cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B = 200, h = NULL, level = 0.95, panel_data = FALSE, timings = FALSE) {
 
   # ── Input checks ─────────────────────────────────────────────────────────────
   method <- match.arg(method, several.ok = TRUE)
@@ -84,7 +85,25 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
     }
   }
 
-  n1 <- length(Y); n2 <- length(X); n3 <- length(Z)
+  timings <- isTRUE(timings)
+  timing_start <- proc.time()[["elapsed"]]
+  timing_last <- timing_start
+  log_timing <- function(stage) {
+    if (!timings) {
+      return(invisible(NULL))
+    }
+    timing_now <- proc.time()[["elapsed"]]
+    message(sprintf(
+      "cic timing [%s]: %.3f s (stage), %.3f s (total)",
+      stage,
+      timing_now - timing_last,
+      timing_now - timing_start
+    ))
+    timing_last <<- timing_now
+    invisible(NULL)
+  }
+
+  n1 <- as.double(length(Y)); n2 <- as.double(length(X)); n3 <- as.double(length(Z))
   alpha <- (1 - level) / 2
   z_a   <- stats::qnorm(1 - alpha)
 
@@ -99,6 +118,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
     panel_fit <- .panel_no_split_estimator(Y, X, Z, h = if (is.null(h)) .default_bandwidth(length(X)) else h)
     theta_hat <- panel_fit$theta_hat
     eps_hat <- mean((panel_fit$theta_hat - qcdf_transform)^2)
+    log_timing("panel no-split estimator")
   }
 
   # ── Bandwidth ─────────────────────────────────────────────────────────────────
@@ -136,6 +156,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
       upper  = theta_hat + z_a * se,
       length = 2 * z_a * se
     )
+    log_timing("variance no-split")
   }
 
   if ("split" %in% method) {
@@ -168,6 +189,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
       upper  = theta_hat + z_a * se_split,
       length = 2 * z_a * se_split
     )
+    log_timing("variance split")
   }
 
   if ("kde" %in% method) {
@@ -191,6 +213,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
       upper  = theta_hat + z_a * se_kde,
       length = 2 * z_a * se_kde
     )
+    log_timing("variance kde")
   }
 
   if (any(c("bse", "bpc") %in% method)) {
@@ -227,6 +250,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
         length = 2 * z_a * se_boot
       )
     }
+    log_timing("bootstrap")
   }
 
   ci <- do.call(rbind, ci_rows[method])  # preserve requested order

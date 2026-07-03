@@ -59,13 +59,17 @@ The `method` argument accepts one or several interval constructors.
 fit <- cic(
   d$Y, d$X, d$Z,
   method = c("no-split", "split", "kde", "bse", "bpc"),
-  B = 1000
+  B = 1000,
+  timings = TRUE
 )
 
 fit
 fit$theta_hat
 fit$ci
 ```
+
+If you only want to profile the runtime, set `timings = TRUE` and the function
+will print elapsed time after each major computation block.
 
 The first three methods are asymptotic constructions:
 

@@ -12,6 +12,7 @@
     - `"bse"`
     - `"bpc"`
   - Optional `panel_data = TRUE` workflow for paired `(Y, Z)` samples
+  - Optional `timings = TRUE` output to show elapsed time by computation block
   - Rcpp-backed computation for the core routines, with a pure R fallback where available
   - Simulation helpers `sim_dgp()`, `qY_dgp()`, and `theta_true()`
 
@@ -27,10 +28,33 @@
   library(cic.newassumptions.newvarianceestimator)
 
   set.seed(2026) #To match the code of the manuscript
-  d <- sim_dgp(2000)
+  d1 <- sim_dgp(100000)
   
-  fit <- cic(d$Y, d$X, d$Z, method = c("no-split", "split", "kde", "bse", "bpc"))
-  summary(fit)
+  #For Big datasets
+  fit <- cic(
+      d1$Y, d1$X, d1$Z,
+      method = c("no-split", "split", "kde"),
+      timings = TRUE
+    )
+    summary(fit)
+
+  d2 <- sim_dgp(2000)
+  #For smaller datasets
+  fit1 <- cic(
+    d2$Y, d2$X, d2$Z,
+    method = c("no-split", "split", "kde", "bse", "bpc"),
+    timings = TRUE
+  )
+  summary(fit1)
+
+  #With Panel data
+  fit2 <- cic(
+      d1$Y, d1$X, d1$Z,
+      method = c("no-split"),
+      panel_data = TRUE,
+      timings = TRUE
+    )
+    summary(fit2)
   ```
 
   ## Validation and warnings
@@ -78,7 +102,7 @@
 
   ## Reference
 
-  Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026). Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript.
+  Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026). Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript : https://arxiv.org/abs/2607.00219 , DOI : 
 
   ## License
 

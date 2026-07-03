@@ -194,6 +194,20 @@ test_that("summary.cic montre une sortie familière aux économistes", {
   expect_true(any(grepl("Pr(>|t|)", out, fixed = TRUE)))
 })
 
+test_that("timings = TRUE affiche des jalons de calcul", {
+  d <- sim_dgp(200, seed = 30)
+  msgs <- character()
+  fit <- withCallingHandlers(
+    cic(d$Y, d$X, d$Z, method = c("no-split", "bse"), B = 200, timings = TRUE),
+    message = function(m) {
+      msgs <<- c(msgs, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    }
+  )
+  expect_s3_class(fit, "cic")
+  expect_true(any(grepl("cic timing \\[bootstrap\\]", msgs)))
+})
+
 
 # ── Tests : Input Sanitization (Code Audit) ──────────────────────────────────
 test_that("B = NA déclenche une erreur", {

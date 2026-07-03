@@ -12,7 +12,8 @@ cic(
   B = 200,
   h = NULL,
   level = 0.95,
-  panel_data = FALSE
+  panel_data = FALSE,
+  timings = FALSE
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ cic(
 \item{level}{Numeric: Confidence level for intervals (default: 0.95)}
 
 \item{panel_data}{Logical: if TRUE, use the panel-data estimator based on a paired (Y, Z) sample.}
+
+\item{timings}{Logical: if TRUE, print elapsed time after each major computation block.}
 }
 \value{
 An S3 object of class 'cic' with elements:
