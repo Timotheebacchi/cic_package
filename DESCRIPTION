@@ -4,20 +4,19 @@ Version: 0.1.0
 Author: Timothée Bacchi [aut, cre]
 Authors@R: person("Timothée", "Bacchi", email = "timothee.bacchi@etu.minesparis.psl.eu", role = c("aut", "cre"))
 Maintainer: Timothée Bacchi <timothee.bacchi@etu.minesparis.psl.eu>
-Description: Implements the Changes-in-Changes estimator and asymptotic
-    confidence intervals for empirical quantile-based estimators.
-    defined as the average of the quantile-transformed ranks. Provides
-    asymptotic confidence intervals via a full-sample (no-split) variance estimator,
-    sample-splitting, a kernel-based estimator, and bootstrap alternatives
-    (percentile and standard-error). The density estimators use a single user-
-    controlled bandwidth multiplier h through h_{n_2,u} = h u(1-u), with default
-    choice 1/log(n_2). The package focuses on core estimation and inference
-    routines; extensive diagnostic helpers have been removed and replaced by
-    minimal input validation warnings.
-    The core computations are written in C++ via Rcpp for performance.
-    The package includes robust input validation, graceful error handling for
-    missing compiled code, and pure R fallback implementations for maximum
-    compatibility.
+Description: Provides core estimation and inference routines for the empirical
+    quantile-based Changes-in-Changes (CiC) counterfactual estimator, defined
+    as the average of quantile-transformed ranks. Implements the novel
+    asymptotic variance estimators developed by Chhor, D'Haultfoeuille,
+    L'Hour, and Mugnier (2026), accommodating both standard independent
+    cross-sections and paired panel data configurations. Inference methods
+    include full-sample analytical (no-split) plug-in variance estimation,
+    sample-splitting techniques, kernel-density-based (KDE) localized
+    residual smoothing, and non-parametric bootstrap alternatives (both
+    standard-error and percentile intervals). Density estimators utilize a
+    user-controlled bandwidth framework with adaptive scaling. Computational
+    performance is heavily optimized via 'Rcpp' bindings alongside robust
+    input validation and sanitization safeguards.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

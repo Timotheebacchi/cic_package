@@ -2,19 +2,32 @@
 
   `cic.newassumptions.newvarianceestimator` is an R package for the Changes-in-Changes estimator and asymptotic inference for empirical quantile-based estimators. It computes the plug-in estimate, provides several confidence interval methods. This package is based on the inference methods proposed in https://arxiv.org/abs/2607.00219
 
-  ## Features
+## Features
 
-  - Point estimation of the CiC parameter from `Y`, `X`, and `Z`
-  - Confidence intervals with five methods:
-    - `"no-split"`
-    - `"split"`
-    - `"kde"`
-    - `"bse"`
-    - `"bpc"`
-  - Optional `panel_data = TRUE` workflow for paired `(Y, Z)` samples
-  - Optional `timings = TRUE` output to show elapsed time by computation block
-  - Rcpp-backed computation for the core routines, with a pure R fallback where available
-  - Simulation helpers `sim_dgp()`, `qY_dgp()`, and `theta_true()`
+* **Point Estimation:** Highly optimized calculation of the CiC parameter from outcome `Y`, endogenous treatment `X`, and instrument/exogenous `Z`.
+* **Flexible Inference:** Support for 5 different confidence interval estimation methods:
+  * `"no-split"` (Full sample nonparametric method — **fastest**)
+  * `"split"` (Sample-splitting variance estimator)
+  * `"kde"` (Epanechnikov Kernel Density Estimation variance estimator)
+  * `"bse"` (Bootstrap standard-error method)
+  * `"bpc"` (Bootstrap percentile method)
+* **Panel Data Support:** Optional `panel_data = TRUE` workflow tailored for paired `(Y, Z)` samples (supported for `"no-split"` and `"split"` methods).
+* **Execution Profiling:** Built-in `timings = TRUE` flag to log elapsed time across major computation blocks.
+* **C++ Acceleration:** Powered by `Rcpp` for core routines, ensuring peak execution speed.
+
+The `cic()` function returns a structured S3 object of class `"cic"`. Under the hood, it is a named list, allowing you to easily extract results for custom plots, tables, or Monte Carlo simulations.
+
+### Object Components
+
+| Element | Type | Description |
+| :--- | :--- | :--- |
+| `theta_hat` | `numeric` | The point estimate of the Changes-in-Changes treatment effect parameter. |
+| `ci` | `data.frame` | A clean data frame containing the calculated confidence intervals with columns: `method`, `lower`, `upper`, and `length`. |
+| `n` | `named numeric` | A vector tracking the sample sizes for each input: `n1` ($Y$), `n2` ($X$), and `n3` ($Z$). |
+| `method` | `character` | A vector containing the names of all the estimation methods evaluated in this run. |
+| `h` | `numeric` | The exact bandwidth value utilized for the density estimation (returns `NA` if only bootstrap methods were used). |
+| `level` | `numeric` | The confidence level specified for the intervals (e.g., `0.95`). |
+| `panel_data` | `logical` | A boolean flag indicating whether the paired panel-data workflow was used (`TRUE`) or not (`FALSE`). |
 
   ## Installation
 
@@ -46,15 +59,22 @@
     timings = TRUE
   )
   summary(fit1)
-
+  d3 <- sim_dgp(100000, panel_data = TRUE)
   #With Panel data
-  fit2 <- cic(
-      d1$Y, d1$X, d1$Z,
-      method = c("no-split"),
+  fit_panel <- cic(
+      d3$Y, d3$X, d3$Z,
+      method = c("no-split","split"),
       panel_data = TRUE,
       timings = TRUE
     )
-    summary(fit2)
+    
+  fit_nopanel  <- cic(
+      d3$Y, d3$X, d3$Z,
+      method = c("no-split","split"),
+      timings = TRUE
+    )
+    summary(fit_panel)
+    summary(fit_nopanel)
   ```
 
   ## Validation and warnings
@@ -62,7 +82,7 @@
   The package performs lightweight input validation and emits clear warnings for common
   issues (e.g., non-numeric inputs, mismatched lengths, or invalid bandwidth
   values). Use `sim_dgp()` and the estimation `cic()` for simulation and
-  inference; inspect warnings to help debug input problems.
+  inference; inspect warnings to help debug input problems. Use `sim_dgp_panel()` tu understand the differences between panel and npn_panel data samples.
 
   ## Assumptions Reminder
 
@@ -81,18 +101,18 @@
     conditions required by the asymptotic theory;
   - the smoothing bandwidth should be reasonable for the sample size.
 
-  The package provides
-  only lightweight validation warnings; inspect warnings produced by `cic()`
-  when running your data.
- Use `summary(fit)` to view
-  the estimation and inference table.
-
-  In practice, `cic()` can receive one method of inference or several methods at once, and it
-  returns the intervals in the requested order. The asymptotic methods are
-  `no-split`, `split`, and `kde`, while `bse` and `bpc` are bootstrap
-  comparisons that help assess robustness in small samples.
+  - The package provides only lightweight validation warnings; inspect warnings produced by `cic()` when running your data.
+  - Use `summary(fit)` to view the estimation and inference table.
+  - In practice, `cic()` can receive one method of inference or several methods at once, and it returns the intervals in the requested order. 
 
   
+  ## Indication to use the package
+
+  - The methods bse and bpc are to be used on relatively small samples
+  - Split and no-split methods are completely usable with gigantic samples. If it runs for more than a minute, even for millions of 
+  - The default bandwith for kde is h = 1/log(n2) as adviced in the manuscript but it is possible to change it. However take care to have a bandwidth which respects assumptions of the paper (assumptions 3)
+  - The kde method can be used with big samples but be expected to be longer the complexity is O(n^2/log(n))
+
   ## Package Contents
 
   - `cic()` for estimation and confidence intervals

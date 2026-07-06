@@ -7,3 +7,4 @@
 ^cic\.Rcheck($|/)
 ^cic_.*\.tar\.gz$
 ^src/.*\.(o|so|dll)$
+^\.vscode$

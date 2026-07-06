@@ -37,7 +37,7 @@
 #' @references Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026).
 #'   Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript.
 #' @export
-cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B = 200, h = NULL, level = 0.95, panel_data = FALSE, timings = FALSE) {
+cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B = 1000, h = NULL, level = 0.95, panel_data = FALSE, timings = FALSE) {
 
   # ── Input checks ─────────────────────────────────────────────────────────────
   method <- match.arg(method, several.ok = TRUE)

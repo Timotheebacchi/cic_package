@@ -9,7 +9,7 @@ cic(
   X,
   Z,
   method = c("no-split", "split", "kde", "bse", "bpc"),
-  B = 200,
+  B = 1000,
   h = NULL,
   level = 0.95,
   panel_data = FALSE,
