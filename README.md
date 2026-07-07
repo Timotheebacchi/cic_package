@@ -41,7 +41,7 @@ The `cic()` function returns a structured S3 object of class `"cic"`. Under the 
   library(cic.newassumptions.newvarianceestimator)
 
   set.seed(2026) #To match the code of the manuscript
-  d1 <- sim_dgp(100000)
+  d1 <- sim_dgp(1000000)
   
   #For Big datasets
   fit <- cic(
@@ -109,9 +109,9 @@ The `cic()` function returns a structured S3 object of class `"cic"`. Under the 
   ## Indication to use the package
 
   - The methods bse and bpc are to be used on relatively small samples
-  - Split and no-split methods are completely usable with gigantic samples. If it runs for more than a minute, even for millions of 
+  - Split,no-split and kde methods are completely usable with gigantic samples. If it runs for more than a minute, even for n = O(10^6) there must be a problem
   - The default bandwith for kde is h = 1/log(n2) as adviced in the manuscript but it is possible to change it. However take care to have a bandwidth which respects assumptions of the paper (assumptions 3)
-  - The kde method can be used with big samples but be expected to be longer the complexity is O(n^2/log(n))
+  
 
   ## Package Contents
 

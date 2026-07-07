@@ -4,33 +4,58 @@
 #include <vector>
 
 using namespace Rcpp;
-
 // [[Rcpp::export]]
 NumericVector f_y_hat_epnechikov(NumericVector Y, NumericVector y, double h) {
   int n = Y.size(), m = y.size();
-  NumericVector Ys = clone(Y).sort();
-  double sqrt5 = std::sqrt(5.0);
-  double coef  = 3.0 / (4.0 * sqrt5);
-  double inv_h = 1.0 / h;
-  double win   = h * sqrt5;
-  NumericVector res(m);
 
+  // Center Y to protect the moment expansion below from catastrophic
+  // cancellation when Y is on a large scale (income, wages, etc.).
+  double center = 0.0;
+  for (int i = 0; i < n; i++) center += Y[i];
+  center /= n;
+
+  NumericVector Ys = clone(Y) - center;
+  Ys = Ys.sort();
+
+  double sqrt5  = std::sqrt(5.0);
+  double coef   = 3.0 / (4.0 * sqrt5);
+  double inv_h  = 1.0 / h;
+  double win    = h * sqrt5;
+  double inv5h2 = 1.0 / (5.0 * h * h);
+
+  // Prefix sums of the 1st and 2nd moments of Ys -- O(n) to build,
+  // O(1) to query the moments of any contiguous range.
+  std::vector<double> cs1(n + 1, 0.0), cs2(n + 1, 0.0);
   const double* ys = Ys.begin();
+  for (int i = 0; i < n; i++) {
+    cs1[i + 1] = cs1[i] + ys[i];
+    cs2[i + 1] = cs2[i] + ys[i] * ys[i];
+  }
+
+  NumericVector res(m);
   const double* yend = Ys.end();
 
   for (int i = 0; i < m; i++) {
-    double yi = y[i];
-    const double* lo = std::lower_bound(ys, yend, yi - win);
-    const double* hi = std::upper_bound(lo, yend, yi + win);
-    double s = 0.0;
-    for (const double* p = lo; p != hi; ++p) {
-      double u = (*p - yi) * inv_h;
-      s += (1.0 - (u * u) / 5.0) * coef;
-    }
-    res[i] = s * inv_h / n;
+    double yi = y[i] - center;
+    const double* lo_ptr = std::lower_bound(ys, yend, yi - win);
+    const double* hi_ptr = std::upper_bound(lo_ptr, yend, yi + win);
+    int lo = (int)(lo_ptr - ys);
+    int hi = (int)(hi_ptr - ys);
+
+    double S0 = (double)(hi - lo);
+    double S1 = cs1[hi] - cs1[lo];
+    double S2 = cs2[hi] - cs2[lo];
+
+    // sum_{p in window} (p - yi)^2 = S2 - 2*yi*S1 + yi^2*S0
+    double quad = S2 - 2.0 * yi * S1 + yi * yi * S0;
+    double s = S0 - quad * inv5h2;   // sum_{p in window} (1 - u^2/5)
+
+    res[i] = s * coef * inv_h / n;
   }
   return res;
 }
+
+
 
 // [[Rcpp::export]]
 IntegerVector rect_counts_rcpp(NumericVector X_sorted, NumericVector x_eval,

@@ -82,7 +82,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
     }
     B <- as.integer(B)
     if (B < 200L) {
-      warning("B < 200: the bootstrap standard error may be unstable. Using B = 200.")
+      warning("B < 200: the bootstrap standard error may be unstable.")
       B <- 200L
     }
   }
@@ -154,7 +154,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
 
   if ("split" %in% method) {
     if (isTRUE(panel_data)) {
-      panel_split_fit <- .panel_estimator(Y, X, Z, h)
+      panel_split_fit <- .panel_split_estimator(Y, X, Z, h)
       theta_hat       <- panel_split_fit$theta_hat
       se_split        <- panel_split_fit$se
       log_timing("panel split estimator")
