@@ -1,9 +1,17 @@
-  # cic.newassumptions.newvarianceestimator: Inference Changes-in-Changes Estimator 
+  # cic.inference : Inference Changes-in-Changes Estimator 
 
- `cic.newassumptions.newvarianceestimator` is an R package for the Changes-in-Changes estimator and asymptotic inference for empirical quantile-based estimators. It computes the plug-in estimate, provides several confidence interval methods. This package is based on the inference methods proposed in https://arxiv.org/abs/2607.00219
+Library of variance estimators in Changes-in-Changes (CiC) design
+
+ ## Setup 
+
+  While it is not available on CRAN : 
+  ```r
+  devtools::install_github("Timotheebacchi/cic_package")
+  ```
+
 ## Features
 
-* **Point Estimation:** Highly optimized calculation of the CiC parameter from outcome `Y`, endogenous treatment `X`, and instrument/exogenous `Z`.
+* **Point Estimation:** Calculation
 * **Flexible Inference:** Support for 5 different confidence interval estimation methods:
   * `"no-split"` (Full sample nonparametric method — **fastest**)
   * `"split"` (Sample-splitting variance estimator)
@@ -51,12 +59,7 @@ timings Logical: if TRUE, print elapsed time after each major computation block.
 | `level` | `numeric` | The confidence level specified for the intervals (e.g., `0.95`). |
 | `panel_data` | `logical` | A boolean flag indicating whether the paired panel-data workflow was used (`TRUE`) or not (`FALSE`). |
 
-  ## Installation
-
-  While it is not available on CRAN : 
-  ```r
-  devtools::install_github("Timotheebacchi/cic_package")
-  ```
+ 
 
   ## Quick Start
 
@@ -67,7 +70,6 @@ timings Logical: if TRUE, print elapsed time after each major computation block.
 
   set.seed(2026) #To match the code of the manuscript
   d1 <- sim_dgp(1000000)
-  
   #For Big datasets
   fit <- cic(
       d1$Y, d1$X, d1$Z,
