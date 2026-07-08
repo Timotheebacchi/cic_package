@@ -1,6 +1,6 @@
   # cic.newassumptions.newvarianceestimator: Inference Changes-in-Changes Estimator 
 
- Library of a Changes-in-Changes estimator with inference 
+ `cic.newassumptions.newvarianceestimator` is an R package for the Changes-in-Changes estimator and asymptotic inference for empirical quantile-based estimators. It computes the plug-in estimate, provides several confidence interval methods. This package is based on the inference methods proposed in https://arxiv.org/abs/2607.00219
 ## Features
 
 * **Point Estimation:** Highly optimized calculation of the CiC parameter from outcome `Y`, endogenous treatment `X`, and instrument/exogenous `Z`.
