@@ -1,4 +1,4 @@
-  # cic.inference : Inference Changes-in-Changes Estimator 
+  # cic_inference : Inference Changes-in-Changes Estimator 
 
 Library of variance estimators in Changes-in-Changes (CiC) design
 
