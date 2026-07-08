@@ -10,7 +10,7 @@ cic(
   Z,
   method = c("no-split", "split", "kde", "bse", "bpc"),
   B = 1000,
-  h = NULL,
+  epsilon_n = NULL,
   level = 0.95,
   panel_data = FALSE,
   timings = FALSE
@@ -25,16 +25,16 @@ cic(
 
 \item{method}{Character vector: Estimation method(s). Options are:
 \itemize{
-\item{"no-split"}{Nonparametric method using full sample (fastest)}
+\item{"no-split"}{Nonparametric method using full sample}
 \item{"split"}{Sample-splitting variance estimator}
 \item{"kde"}{Epanechnikov KDE variance estimator}
 \item{"bse"}{Bootstrap standard-error method}
 \item{"bpc"}{Bootstrap percentile method}
 }}
 
-\item{B}{Integer: Number of bootstrap replications (default: 200). Only used for "bse" and "bpc".}
+\item{B}{Integer: Number of bootstrap replications (default: 1000). Only used for "bse" and "bpc".}
 
-\item{h}{Numeric: Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default is 1/log(n_2).}
+\item{epsilon_n}{Numeric or function : Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default epsilon_n is 1/log(n_2).}
 
 \item{level}{Numeric: Confidence level for intervals (default: 0.95)}
 

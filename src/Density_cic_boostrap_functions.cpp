@@ -5,8 +5,12 @@
 
 using namespace Rcpp;
 // [[Rcpp::export]]
-NumericVector f_y_hat_epnechikov(NumericVector Y, NumericVector y, double h) {
+NumericVector f_y_hat_epnechikov(NumericVector Y, NumericVector y, NumericVector h_vals) {
   int n = Y.size(), m = y.size();
+
+  if (h_vals.size() != m) {
+    stop("h_vals must have the same length as the evaluation vector y.");
+  }
 
   // Center Y to protect the moment expansion below from catastrophic
   // cancellation when Y is on a large scale (income, wages, etc.).
@@ -19,9 +23,6 @@ NumericVector f_y_hat_epnechikov(NumericVector Y, NumericVector y, double h) {
 
   double sqrt5  = std::sqrt(5.0);
   double coef   = 3.0 / (4.0 * sqrt5);
-  double inv_h  = 1.0 / h;
-  double win    = h * sqrt5;
-  double inv5h2 = 1.0 / (5.0 * h * h);
 
   // Prefix sums of the 1st and 2nd moments of Ys -- O(n) to build,
   // O(1) to query the moments of any contiguous range.
@@ -36,6 +37,19 @@ NumericVector f_y_hat_epnechikov(NumericVector Y, NumericVector y, double h) {
   const double* yend = Ys.end();
 
   for (int i = 0; i < m; i++) {
+    double hi_val = h_vals[i];
+
+    // security when h_n(u) = epsilon_n u(1-u) is used and u is near 0 or 1
+    if (hi_val <= 0.0) {
+      res[i] = 0.0; 
+      continue;
+    }
+
+    // Depends on the local window
+    double win    = hi_val * sqrt5;
+    double inv_h  = 1.0 / hi_val;
+    double inv5h2 = 1.0 / (5.0 * hi_val * hi_val);
+
     double yi = y[i] - center;
     const double* lo_ptr = std::lower_bound(ys, yend, yi - win);
     const double* hi_ptr = std::upper_bound(lo_ptr, yend, yi + win);

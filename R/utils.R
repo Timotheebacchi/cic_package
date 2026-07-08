@@ -87,14 +87,8 @@
   sum(delta_V * Su * Sv) - term2
 }
 
-# Default bandwidth multiplier for the local density estimators.
-# The local bandwidth used by the estimator is h_{n_2,u} = eps_n * u * (1-u).
-# The default multiplier follows the theoretical suggestion 1 / log(n_2).
-.default_bandwidth <- function(n2) {
-  1 / log(n2)
-}
 
-.panel_no_split_estimator <- function(Y, X, Z, h) {
+.panel_no_split_estimator <- function(Y, X, Z, epsilon_n) {
   n1 <- length(Y)
   n2 <- length(X)
 
@@ -126,12 +120,14 @@
 
   U_1 <- FZ1(X[x_1])
   U_2 <- FZ2(X[x_2])
+  h_1 <- epsilon_n * U_1 * (1 - U_1)
+  h_2 <- epsilon_n * U_2 * (1 - U_2)
   FYhat <- seq_len(q - 1L) / q
 
   est_1 <- .make_density_estimator(sort(U_1), FYhat)
   est_2 <- .make_density_estimator(sort(U_2), FYhat)
-  fU_1 <- est_1$estimate(h, pointwise = 1)
-  fU_2 <- est_2$estimate(h, pointwise = 1)
+  fU_1 <- est_1$estimate(h_1, pointwise = 1)
+  fU_2 <- est_2$estimate(h_2, pointwise = 1)
 
   eta_panel <- .fast_eta(diff(sort(Y[y_1])), fU_1, diff(sort(Y[y_2])), fU_2, FYhat)
 
@@ -151,7 +147,7 @@
 }
 
 # Returns a list with point estimate, asymptotic variance, and standard error.
-.panel_split_estimator <- function(Y, X, Z, h) {
+.panel_split_estimator <- function(Y, X, Z, epsilon_n) {
   n1 <- length(Y)
   n2 <- length(X)
 
@@ -176,7 +172,7 @@
   x_1 <- seq_len(r)
   x_2 <- seq.int(r + 1L, 2L * r)
 
-  # Step 1: Compute empirical CDFs and left-quantiles
+  # Compute empirical CDFs and left-quantiles
   FZ1 <- stats::ecdf(Z[z_1])
   FZ2 <- stats::ecdf(Z[z_2])
   FY1_q <- .prepare_left_quantile(Y[y_1])
@@ -187,25 +183,27 @@
   theta_2 <- mean(FY2_q(FZ1(X[x_2])))
   theta_hat <- mean(c(theta_1, theta_2))
 
-  # Step 3: Ranks and density estimation (\check{f}_U^{(1)} and \check{f}_U^{(2)})
+  #  Ranks and density estimation (\check{f}_U^{(1)} and \check{f}_U^{(2)})
   U_1 <- FZ1(X[x_1])
   U_2 <- FZ2(X[x_2])
+  h_1 <- epsilon_n * U_1 * (1 - U_1)
+  h_2 <- epsilon_n * U_2 * (1 - U_2)
   FYhat <- seq_len(q - 1L) / q
 
   est_1 <- .make_density_estimator(sort(U_1), FYhat)
   est_2 <- .make_density_estimator(sort(U_2), FYhat)
-  fU_1 <- est_1$estimate(h, pointwise = 1)
-  fU_2 <- est_2$estimate(h, pointwise = 1)
+  fU_1 <- est_1$estimate(h_1, pointwise = 1)
+  fU_2 <- est_2$estimate(h_2, pointwise = 1)
 
-  # Step 4: Double integral via the fast eta routine (\hat{E}[\eta^2])
+  #  Double integral via the fast eta routine (\hat{E}[\eta^2])
   eta_panel <- .fast_eta(diff(sort(Y[y_1])), fU_1, diff(sort(Y[y_2])), fU_2, FYhat)
 
-  # Step 5: Compute residuals (\check{\eps}_i^{(j)}) over all X observations
+  # Compute residuals (\check{\eps}_i^{(j)}) over all X observations
   eps_1 <- theta_hat - FY1_q(FZ2(X))
   eps_2 <- theta_hat - FY2_q(FZ1(X))
   eps_panel <- mean((eps_1^2 + eps_2^2) / 2)
 
-  # Step 6: Asymptotic variance scaling matching the \widehat{\widetilde{\sigma}}^2 formula
+  # Asymptotic variance scaling matching the \widehat{\widetilde{\sigma}}^2 formula
   # We use N = min(n1, n2) as the standard package reference sample size.
   N <- min(n1, n2)
   

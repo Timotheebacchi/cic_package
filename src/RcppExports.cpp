@@ -11,15 +11,15 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // f_y_hat_epnechikov
-NumericVector f_y_hat_epnechikov(NumericVector Y, NumericVector y, double h);
-RcppExport SEXP _cic_newassumptions_newvarianceestimator_f_y_hat_epnechikov(SEXP YSEXP, SEXP ySEXP, SEXP hSEXP) {
+NumericVector f_y_hat_epnechikov(NumericVector Y, NumericVector y, NumericVector h_vals);
+RcppExport SEXP _cic_newassumptions_newvarianceestimator_f_y_hat_epnechikov(SEXP YSEXP, SEXP ySEXP, SEXP h_valsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< double >::type h(hSEXP);
-    rcpp_result_gen = Rcpp::wrap(f_y_hat_epnechikov(Y, y, h));
+    Rcpp::traits::input_parameter< NumericVector >::type h_vals(h_valsSEXP);
+    rcpp_result_gen = Rcpp::wrap(f_y_hat_epnechikov(Y, y, h_vals));
     return rcpp_result_gen;
 END_RCPP
 }

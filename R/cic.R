@@ -9,14 +9,14 @@
 #' @param Z Numeric vector: Instrument/exogenous variable
 #' @param method Character vector: Estimation method(s). Options are:
 #'   \itemize{
-#'     \item{"no-split"}{Nonparametric method using full sample (fastest)}
+#'     \item{"no-split"}{Nonparametric method using full sample}
 #'     \item{"split"}{Sample-splitting variance estimator}
 #'     \item{"kde"}{Epanechnikov KDE variance estimator}
 #'     \item{"bse"}{Bootstrap standard-error method}
 #'     \item{"bpc"}{Bootstrap percentile method}
 #'   }
-#' @param B Integer: Number of bootstrap replications (default: 200). Only used for "bse" and "bpc".
-#' @param h Numeric: Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default is 1/log(n_2).
+#' @param B Integer: Number of bootstrap replications (default: 1000). Only used for "bse" and "bpc".
+#' @param epsilon_n Numeric or function : Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default epsilon_n is 1/log(n_2).
 #' @param level Numeric: Confidence level for intervals (default: 0.95)
 #' @param panel_data Logical: if TRUE, use the panel-data estimator based on a paired (Y, Z) sample.
 #' @param timings Logical: if TRUE, print elapsed time after each major computation block.
@@ -37,16 +37,17 @@
 #' @references Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026).
 #'   Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript.
 #' @export
-cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B = 1000, h = NULL, level = 0.95, panel_data = FALSE, timings = FALSE) {
+cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B = 1000, epsilon_n = NULL, level = 0.95, panel_data = FALSE, timings = FALSE) {
 
   # ── Input checks ─────────────────────────────────────────────────────────────
   method <- match.arg(method, several.ok = TRUE)
   stopifnot(
     is.numeric(Y), is.numeric(X), is.numeric(Z),
     length(Y) >= 4, length(X) >= 4, length(Z) >= 4,
-    is.null(h) || (is.numeric(h) && length(h) == 1 && h > 0),
+    is.null(epsilon_n) || is.function(epsilon_n) || (is.numeric(epsilon_n) && length(epsilon_n) == 1 && epsilon_n > 0),
     is.numeric(level), level > 0, level < 1
   )
+  
 
   # Lightweight input warnings and coercions
   if (!is.atomic(Y) || is.matrix(Y) || is.data.frame(Y)) {
@@ -106,7 +107,21 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
   z_a   <- stats::qnorm(1 - alpha)
 
   # ── Bandwidth initialization ──────────────────────────────────────────────────
-  if (is.null(h)) h <- .default_bandwidth(n2)
+  if (is.null(epsilon_n)) {
+  epsilon_n <- function(n) 1 / log(n)
+}
+
+if (is.function(epsilon_n)) {
+  epsilon_n <- epsilon_n(n2)
+}
+
+stopifnot(
+  is.numeric(epsilon_n),
+  length(epsilon_n) == 1L,
+  is.finite(epsilon_n),
+  epsilon_n > 0
+)
+  
 
   # ── Baseline setup (Conditional lazy execution) ───────────────────────────────
   ci_rows   <- list()
@@ -122,13 +137,14 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
     qcdf_transform <- .prepare_left_quantile(Y)(Uhat)
     theta_hat      <- mean(qcdf_transform)
     eps_hat        <- mean((theta_hat - qcdf_transform)^2)
+    h <- epsilon_n * Uhat * (1 - Uhat)
   }
 
   # ── Variance & Estimation methods ────────────────────────────────────────────
   
   if ("no-split" %in% method) {
     if (isTRUE(panel_data)) {
-      panel_fit <- .panel_no_split_estimator(Y, X, Z, h)
+      panel_fit <- .panel_no_split_estimator(Y, X, Z, epsilon_n)
       theta_hat <- panel_fit$theta_hat
       se        <- panel_fit$se
       log_timing("panel no-split estimator")
@@ -136,7 +152,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
       Ysortdiff   <- diff(sort(Y))
       FYhat       <- seq_len(n1 - 1) / n1
       est_full    <- .make_density_estimator(sort(Uhat), FYhat)
-      fUhat       <- est_full$estimate(h, pointwise = 1)
+      fUhat       <- est_full$estimate(epsilon_n, pointwise = 1)
       eta_nosplit <- .fast_eta(Ysortdiff, fUhat, Ysortdiff, fUhat, FYhat)
       sigma_sq    <- lbda1_3 * eta_nosplit + lbda2 * eps_hat
       se          <- sqrt(sigma_sq / N)
@@ -154,7 +170,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
 
   if ("split" %in% method) {
     if (isTRUE(panel_data)) {
-      panel_split_fit <- .panel_split_estimator(Y, X, Z, h)
+      panel_split_fit <- .panel_split_estimator(Y, X, Z, epsilon_n)
       theta_hat       <- panel_split_fit$theta_hat
       se_split        <- panel_split_fit$se
       log_timing("panel split estimator")
@@ -172,11 +188,14 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
       Ysort1diff  <- diff(sort(Y[seq_len(n_half)]))
       Ysort2diff  <- diff(sort(Y[seq.int(n1 - n_half + 1L, n1)]))
       FYhat_split <- seq_len(n_half - 1L) / n_half
-
+      h1 <- epsilon_n * Uhat1 * (1 - Uhat1)
+      h2 <- epsilon_n * Uhat2 * (1 - Uhat2)
       est1   <- .make_density_estimator(sort(Uhat1), FYhat_split)
       est2   <- .make_density_estimator(sort(Uhat2), FYhat_split)
-      fUhat1 <- est1$estimate(h, pointwise = 1)
-      fUhat2 <- est2$estimate(h, pointwise = 1)
+      fUhat1 <- est1$estimate(epsilon_n, pointwise = 1)
+      fUhat2 <- est2$estimate(epsilon_n, pointwise = 1)
+      
+  
 
       eta_hat_split  <- .fast_eta(Ysort1diff, fUhat1, Ysort2diff, fUhat2, FYhat_split)
       sigma_sq_split <- lbda1_3 * eta_hat_split + lbda2 * eps_hat
@@ -260,7 +279,7 @@ cic <- function(Y, X, Z, method = c("no-split", "split", "kde", "bse", "bpc"), B
       n          = c(n1 = n1, n2 = n2, n3 = n3),
       method     = method,
       panel_data = isTRUE(panel_data),
-      h          = if (any(c("no-split", "kde") %in% method)) h else NA_real_
+      epsilon_n  = if (any(c("no-split", "kde") %in% method)) epsilon_n else NA_real_
     ),
     class = "cic"
   )

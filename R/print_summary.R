@@ -40,11 +40,11 @@ summary.cic <- function(object, digits = 4, ...) {
 
   cat(sprintf("\nConfidence level : %.0f%%\n", object$level * 100))
 
-  if (!is.na(object$h))
+  if (!is.na(object$epsilon_n))
     cat(sprintf("Bandwidth (h)    : %.4f  [1/log(n2) plug-in default]\n",
-                object$h))
+                object$epsilon_n))
   else
-    cat("Bandwidth (h)    : NA  [not applicable for bootstrap methods]\n")
+    cat("Bandwidth (epsilon_n)    : NA  [not applicable for bootstrap methods]\n")
 
   cat(rep("-", 44), "\n", sep = "")
   cat(sprintf("Point estimate : %.4f\n\n", object$theta_hat))

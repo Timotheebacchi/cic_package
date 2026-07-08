@@ -15,9 +15,32 @@
 * **Execution Profiling:** Built-in `timings = TRUE` flag to log elapsed time across major computation blocks.
 * **C++ Acceleration:** Powered by `Rcpp` for core routines, ensuring peak execution speed.
 
-The `cic()` function returns a structured S3 object of class `"cic"`. Under the hood, it is a named list, allowing you to easily extract results for custom plots, tables, or Monte Carlo simulations.
+The `cic()` function returns a structured S3 object of class `"cic"`. 
 
-### Object Components
+Under the hood, it is a named list, allowing you to easily extract results for custom plots, tables, or Monte Carlo simulations.
+
+### Arguments 
+
+Y Numeric vector: Outcome variable
+X Numeric vector: Treatment/endogenous variable
+ vector : Instrument/exogenous variable
+ method :  Character vector: Estimation method(s). Options are:
+ 
+     "no-split" : Nonparametric method using full sample
+#'     "split" : Sample-splitting variance estimator
+#'     "kde" : Epanechnikov KDE variance estimator
+#'     "bse" : Bootstrap standard-error method
+#'     "bpc" : Bootstrap percentile method
+
+B Integer: Number of bootstrap replications (default: 1000, take at least B>=200). Only used for "bse" and "bpc".
+epsilon_n Numeric: Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default is epsilon_n = 1/log(n_2).
+level Numeric: Confidence level for intervals (default: 0.95)
+panel_data Logical: if TRUE, use the panel-data estimator based on a paired (Y, Z) sample.
+timings Logical: if TRUE, print elapsed time after each major computation block.
+
+
+
+### Output Components
 
 | Element | Type | Description |
 | :--- | :--- | :--- |
@@ -31,6 +54,7 @@ The `cic()` function returns a structured S3 object of class `"cic"`. Under the 
 
   ## Installation
 
+  While it is not available on CRAN : 
   ```r
   devtools::install_github("Timotheebacchi/cic_package")
   ```
@@ -39,6 +63,8 @@ The `cic()` function returns a structured S3 object of class `"cic"`. Under the 
 
   ```r
   library(cic.newassumptions.newvarianceestimator)
+
+  
 
   set.seed(2026) #To match the code of the manuscript
   d1 <- sim_dgp(1000000)
