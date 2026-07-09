@@ -1,108 +1,143 @@
-  # cic_inference : Inference Changes-in-Changes Estimator 
+# cicinference
 
-Library of variance estimators in Changes-in-Changes (CiC) design
+Variance estimators for the Changes-in-Changes (CiC) design.
 
- ## Setup 
+## Requirements
 
-  While it is not available on CRAN : 
-  ```r
-  devtools::install_github("Timotheebacchi/cic_inference")
-  ```
+R >= 4.0, a C++ compiler (variance estimators are implemented via Rcpp).
 
+## Installation
 
+Not available on CRAN:
 
-## Arguments 
+```r
+devtools::install_github("Timotheebacchi/cicinference")
+```
+
+## Quick Start
+
+```r
+library(cicinference)
+
+d <- sim_dgp(n = 5000, b1 = 0.05, b2 = 0.05, d1 = 0.05, d2 = 0.05, seed = 2026)
+fit <- cic_inference(d$Y, d$X, d$Z, method = "no-split")
+summary(fit)
+```
+
+## Usage
+
+### `cic_inference()`
+
 ```r
 cic_inference(
-Y Numeric vector, 
-X Numeric vector,
-Z Numeric vector, 
- method :  Character vector,
-#Options are:
-#        "no-split" : Nonparametric method using full sample
-#       "split" : Sample-splitting variance estimator
-#      "kde" : Epanechnikov KDE variance estimator
-#     "bse" : Bootstrap standard-error method
-#    "bpc" : Bootstrap percentile method
-B Integer,
-# Number of bootstrap replications (default: 1000, take at least B>=200). Only used for "bse" and "bpc".
-epsilon_n Numeric,
-#Bandwidth multiplier epsilon_n used in h_{n_2,u} = epsilon_n u(1-u). The default is epsilon_n = 1/log(n_2).
-level Numeric,
-# Confidence level for intervals (default: 0.95)
-panel_data Logical,
-# if TRUE, use the panel-data estimator based on a paired (Y, Z) sample.
-timings Logical,
-# if TRUE, print elapsed time after each major computation block.
+  Y,          # numeric vector: outcome
+  X,          # numeric vector: treatment/endogenous variable
+  Z,          # numeric vector: instrument/exogenous variable
+  method,     # character vector, one or more of:
+              #   "no-split" - nonparametric, full sample
+              #   "split"    - sample-splitting variance estimator
+              #   "kde"      - Epanechnikov KDE variance estimator (Athey-Imbens)
+              #   "bse"      - bootstrap standard-error
+              #   "bpc"      - bootstrap percentile
+  B = 1000,       # bootstrap replications; used only for "bse"/"bpc" (B >= 200 recommended)
+  epsilon_n,      # KDE bandwidth multiplier: h_{n2,u} = epsilon_n * u * (1-u).
+                  # Default 1/log(n2), per the manuscript's recommendation.
+  level = 0.95,   # confidence level
+  panel_data = FALSE,  # TRUE for the paired-sample (Y, Z) panel estimator
+  timings = FALSE      # print elapsed time per computation block
 )
 ```
+
+**Value**: an object of class `cic_fit` with, for each requested `method`, a point
+estimate `theta_hat`, standard error `se`, and a `level`-confidence interval.
+`summary()` prints these in a table; individual fields are accessible via
+`fit$<method>$theta_hat`, `fit$<method>$se`, etc.
+
+### `sim_dgp()`
+
+Simulates data from the Monte Carlo design used in the manuscript.
 
 ```r
-sim_dgp
-(
-n integer,
-panel_data Logical 
-#if True the data created is a panel_data sample
+sim_dgp(
+  n,                 # sample size
+  b1 = 0, b2 = 0.05, # boundary parameters, must satisfy b1, b2 < 1
+  d1 = 0, d2 = 0.05, # tail parameters, must satisfy d1 < 1 - b1, d2 < 1 - b2
+  seed = NULL,
+  panel_data = FALSE # if TRUE, Y and Z are paired (for the panel workflow)
 )
 ```
-## Example
 
-  ```r
-  library(cic.newassumptions.newvarianceestimator)
-  set.seed(2026) 
-  d1 <- sim_dgp(1000000)
-  #For Big datasets
-  fit <- cic(
-      d1$Y, d1$X, d1$Z,
-      method = c("no-split", "split", "kde"),
-      timings = TRUE
-    )
-    summary(fit)
+`theta_true(b1, b2, d1, d2)` returns the true parameter for this DGP, useful as
+a benchmark in Monte Carlo checks.
 
-  d2 <- sim_dgp(2000)
-  #For smaller datasets
-  fit1 <- cic_inference(
-    d2$Y, d2$X, d2$Z,
-    method = c("no-split", "split", "kde", "bse", "bpc"),
-    timings = TRUE
-  )
-  summary(fit1)
-  d3 <- sim_dgp(100000, panel_data = TRUE)
-  #With Panel data
-  fit_panel <- cic_inference(
-      d3$Y, d3$X, d3$Z,
-      method = c("no-split","split"),
-      panel_data = TRUE,
-      timings = TRUE
-    )
-    
-  fit_nopanel  <- cic_inference(
-      d3$Y, d3$X, d3$Z,
-      method = c("no-split","split"),
-      timings = TRUE
-    )
-    summary(fit_panel)
-    summary(fit_nopanel)
-  ```
+## Full Example
 
-  ## Assumptions Reminder
+```r
+library(cicinference)
 
-  The package is built for the CiC setup described in [the manuscript](https://arxiv.org/abs/2607.00219). Before interpreting the output, the input data should be checked against the main assumptions used by the estimator
+b1 <- 0.05; b2 <- 0.05; d1 <- 0.05; d2 <- 0.05
+seed <- 2026
 
-  ## Indication to use the package
+theta0 <- theta_true(b1, b2, d1, d2)
+cat("theta_true =", theta0, "\n")
 
-  - Split,no-split and kde methods are completely usable with gigantic samples. If it runs for more than a minute, even for n = O(10^6) there must be a problem
-  - The default bandwith for kde is h = 1/log(n2) as adviced in the manuscript but it is possible to change it. However take care to have a bandwidth which respects assumptions of the paper (assumptions 3)
-  - Bootstrap methods are usable on samples containing millions of elements but is expected to compute for a longer time in this case
-  
-  ## Reference
+## Large sample
+data1 <- sim_dgp(1e6, b1, b2, d1, d2, seed)
+fit <- cic_inference(data1$Y, data1$X, data1$Z,
+                      method = c("no-split", "split", "kde"), timings = TRUE)
+summary(fit)
 
-  Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026). Asymptotic Properties of Empirical Quantile-Based Estimators. Manuscript : https://arxiv.org/abs/2607.00219 , DOI : 2607.00219
+## Smaller sample - bootstrap methods become tractable
+data2 <- sim_dgp(1e4, b1, b2, d1, d2, seed)
+fit1 <- cic_inference(data2$Y, data2$X, data2$Z,
+                       method = c("no-split", "split", "kde", "bse", "bpc"),
+                       timings = TRUE)
+summary(fit1)
 
-  ## License
+## Panel data: fit_panel accounts for the Y-Z dependence, fit_nopanel ignores
+## it and is shown here only for comparison (it understates precision).
+data3 <- sim_dgp(1e6, b1, b2, d1, d2, seed, panel_data = TRUE)
+fit_panel   <- cic_inference(data3$Y, data3$X, data3$Z,
+                              method = c("no-split", "split"), panel_data = TRUE,
+                              timings = TRUE)
+fit_nopanel <- cic_inference(data3$Y, data3$X, data3$Z,
+                              method = c("no-split", "split"), timings = TRUE)
+summary(fit_panel)
+summary(fit_nopanel)
+```
 
-  MIT + file LICENSE
+## Assumptions
 
-  ## Author
+The package targets the CiC setup of Chhor et al. (2026). Before interpreting
+output, check the input data against the manuscript's assumptions, in
+particular Assumption 3 for bandwidth choice. For `sim_dgp()`, parameters must
+satisfy `b1, b2 < 1` and `d1 < 1 - b1`, `d2 < 1 - b2`, or `theta_true()` is not
+well-defined.
 
-    Julien Chhor,Xavier D'Haultfoeuille, Jeremy L'Hour, Martin Mugnier, Timothée Bacchi (Research Assistant)
+## Notes
+
+- `"no-split"`, `"split"`, and `"kde"` scale to samples of size 10^6+; each
+  should complete in well under a minute. If not, something is wrong — please
+  open an issue.
+- The default KDE bandwidth `epsilon_n = 1/log(n2)` follows the manuscript's
+  recommendation. Custom values must still satisfy Assumption 3.
+- Bootstrap methods (`"bse"`, `"bpc"`) scale to millions of observations but
+  take noticeably longer; prefer them on moderate sample sizes.
+
+## References
+
+Chhor, J., D'Haultfoeuille, X., L'Hour, J., & Mugnier, M. (2026). *Asymptotic
+Properties of Empirical Quantile-Based Estimators*. [arXiv:2607.00219](https://arxiv.org/abs/2607.00219)
+
+Athey, S. & Imbens, G. W. (2006). Identification and Inference in Nonlinear
+Difference-in-Differences Models. *Econometrica*, 74(2), 431-497.
+[doi:10.1111/j.1468-0262.2006.00668.x](https://doi.org/10.1111/j.1468-0262.2006.00668.x)
+
+## License
+
+MIT + file LICENSE
+
+## Authors
+
+Julien Chhor, Xavier D'Haultfoeuille, Jeremy L'Hour, Martin Mugnier,
+Timothée Bacchi (Research Assistant)
