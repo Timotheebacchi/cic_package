@@ -1,0 +1,8 @@
+"item","value"
+"repo_root","/Users/timbak/Desktop/PSE/R/scripts/cicinference"
+"load_method","pkgload::load_all"
+"r_version","4.3.3"
+"rng_kind","Mersenne-Twister;Inversion;Rejection"
+"cross_section_methods","no-split;split;kde;bse;bpc"
+"panel_methods","no-split;split"
+"bootstrap_reference_included","TRUE"

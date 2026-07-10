@@ -1,0 +1,9 @@
+"call_id","dataset_id","panel_data","requested_methods","requested_B","effective_B","level","fit_seed","required"
+"xs_small_all_methods","xs_small",FALSE,"no-split;split;kde;bse;bpc",200,200,0.95,902601,TRUE
+"xs_medium_all_methods","xs_medium",FALSE,"no-split;split;kde;bse;bpc",200,200,0.95,902602,TRUE
+"xs_edge_ties_all_methods","xs_edge_ties",FALSE,"no-split;split;kde;bse;bpc",200,200,0.95,902603,TRUE
+"xs_edge_extreme_all_methods","xs_edge_extreme",FALSE,"no-split;split;kde;bse;bpc",200,200,0.95,902604,TRUE
+"panel_small_methods","panel_small",TRUE,"no-split;split",,,0.95,902605,TRUE
+"panel_medium_unbalanced_methods","panel_medium_unbalanced",TRUE,"no-split;split",,,0.95,902606,TRUE
+"xs_small_bootstrap_B50_probe","xs_small",FALSE,"bse;bpc",50,200,0.95,902607,FALSE
+"xs_missing_probe_nosplit","xs_missing_probe",FALSE,"no-split",,,0.95,902608,FALSE

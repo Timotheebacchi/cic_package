@@ -1,0 +1,14 @@
+"function_name","case_id","t","b1","b2","d1","d2","value"
+"qY_dgp","qY_default_grid",0.01,,,0,0.05,0.000502643075390719
+"qY_dgp","qY_default_grid",0.1,,,0,0.05,0.00528192622929979
+"qY_dgp","qY_default_grid",0.5,,,0,0.05,0.0352649238413776
+"qY_dgp","qY_default_grid",0.9,,,0,0.05,0.122018454301964
+"qY_dgp","qY_default_grid",0.99,,,0,0.05,0.258925411794167
+"qY_dgp","qY_two_tail_grid",0.001,,,0.08,0.06,-0.737740796927523
+"qY_dgp","qY_two_tail_grid",0.05,,,0.08,0.06,-0.267732858586952
+"qY_dgp","qY_two_tail_grid",0.5,,,0.08,0.06,-0.0145522797202589
+"qY_dgp","qY_two_tail_grid",0.95,,,0.08,0.06,0.192798944310883
+"qY_dgp","qY_two_tail_grid",0.999,,,0.08,0.06,0.513481205206233
+"theta_true","theta_default",,0,0.05,0,0.05,0.0555555555555554
+"theta_true","theta_two_tail",,0.06,0.08,0.02,0.04,0.0230870689052791
+"theta_true","theta_edge_heavy",,0.05,0.05,0.12,0.12,-2.00729136243366e-16

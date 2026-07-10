@@ -1,0 +1,8 @@
+"dataset_id","kind","seed","n_y","n_x","n_z","has_missing","description"
+"xs_small","cross_section",202601,64,64,64,FALSE,"Small simulated cross-sectional dataset with X clamped inside Z range."
+"xs_medium","cross_section",202602,320,320,320,FALSE,"Medium simulated cross-sectional dataset with non-default DGP parameters."
+"xs_edge_ties","cross_section_edge",202603,96,96,96,FALSE,"Edge dataset with many ties induced by rounding Y, X, and Z."
+"xs_edge_extreme","cross_section_edge",202604,96,96,96,FALSE,"Edge dataset with extreme Y quantile values and interior X ranks."
+"panel_small","panel",202605,64,64,64,FALSE,"Small paired Y/Z panel dataset with same X sample size."
+"panel_medium_unbalanced","panel",202606,160,120,160,FALSE,"Panel dataset with paired Y/Z length different from X length."
+"xs_missing_probe","edge_probe",202607,64,64,64,TRUE,"Missing-value probe; behavior is recorded but not a required fit."
