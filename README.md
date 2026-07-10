@@ -19,7 +19,7 @@ devtools::install_github("Timotheebacchi/cicinference")
 ```r
 library(cicinference)
 
-d <- sim_dgp(n = 5000, b1 = 0.05, b2 = 0.05, d1 = 0.05, d2 = 0.05, seed = 2026)
+d <- sim_dgp(n = 10000, b1 = 0.05, b2 = 0.05, d1 = 0.05, d2 = 0.05, seed = 2026)
 fit <- cic_inference(d$Y, d$X, d$Z, method = "no-split")
 summary(fit)
 ```
