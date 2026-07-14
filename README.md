@@ -23,9 +23,9 @@ From a local checkout, use `devtools::install_local(".")`.
 ```r
 library(quantcdf.inference)
 
-d <- sim_dgp(n = 5000, b1 = 0.05, b2 = 0.05, d1 = 0.05, d2 = 0.05, seed = 2026)
-out <- fit(d$Y, d$X, d$Z, method = "no-split")
-summary(out)
+d <- sim_dgp(n = 10000, b1 = 0.05, b2 = 0.05, d1 = 0.05, d2 = 0.05, seed = 2026)
+fit <- cic_inference(d$Y, d$X, d$Z, method = "no-split")
+summary(fit)
 ```
 
 ## Usage
@@ -141,6 +141,4 @@ Paper authors:
 - Jérémy L'Hour: CFM & CREST-ENSAE
 - Martin Mugnier: Paris School of Economics
 
-Research assistance:
-
-- Timothée Bacchi: research assistant of Martin Mugnier
+Timothée Bacchi (Research Assistant)
